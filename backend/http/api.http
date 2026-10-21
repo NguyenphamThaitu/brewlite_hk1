@@ -7,13 +7,14 @@ Content-Type: application/json
 
 { "email": "a@a.com", "password": "123456" }
 
-### login
+### login (lấy token)
 POST http://localhost:3001/auth/login
 Content-Type: application/json
 
 { "email": "a@a.com", "password": "123456" }
 
 > {% client.global.set("token", response.body.accessToken); %}
+
 ### login sai mat khau (mong doi 401)
 POST http://localhost:3001/auth/login
 Content-Type: application/json
@@ -31,3 +32,23 @@ POST http://localhost:3001/auth/register
 Content-Type: application/json
 
 { "email": "abc", "password": "123456" }
+
+### tao don (mong doi 201, status PENDING, total 90000)
+POST http://localhost:3001/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "items": [{ "productId": 1, "size": "M", "toppings": ["Kem"], "qty": 2 }] }
+
+### gio hang rong (mong doi 400)
+POST http://localhost:3001/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "items": [] }
+
+### khong co token (mong doi 401)
+POST http://localhost:3001/orders
+Content-Type: application/json
+
+{ "items": [{ "productId": 1, "size": "M", "qty": 1 }] }

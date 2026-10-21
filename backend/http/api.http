@@ -1,0 +1,33 @@
+### list products
+GET http://localhost:3001/products
+
+### register
+POST http://localhost:3001/auth/register
+Content-Type: application/json
+
+{ "email": "a@a.com", "password": "123456" }
+
+### login
+POST http://localhost:3001/auth/login
+Content-Type: application/json
+
+{ "email": "a@a.com", "password": "123456" }
+
+> {% client.global.set("token", response.body.accessToken); %}
+### login sai mat khau (mong doi 401)
+POST http://localhost:3001/auth/login
+Content-Type: application/json
+
+{ "email": "a@a.com", "password": "sai12345" }
+
+### register trung email (mong doi 409)
+POST http://localhost:3001/auth/register
+Content-Type: application/json
+
+{ "email": "a@a.com", "password": "123456" }
+
+### email sai dinh dang (mong doi 400)
+POST http://localhost:3001/auth/register
+Content-Type: application/json
+
+{ "email": "abc", "password": "123456" }

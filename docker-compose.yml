@@ -11,5 +11,26 @@ services:
       test: ["CMD-SHELL", "pg_isready -U brew -d brewlite"]
       interval: 5s
       retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://brew:brew@db:5432/brewlite
+      JWT_SECRET: change-me
+      CORS_ORIGIN: http://localhost:3000
+      PORT: 3001
+    ports: ["3001:3001"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports: ["3000:3000"]
+    depends_on: [backend]
+
 volumes:
   pgdata:

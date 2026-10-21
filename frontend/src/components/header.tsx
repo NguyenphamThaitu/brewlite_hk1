@@ -23,7 +23,10 @@ export default function Header() {
                         <button onClick={logout}>Đăng xuất</button>
                     </>
                 ) : (
+                    <>
                     <Link href="/login">Đăng nhập</Link>
+                    <Link href="/register">Đăng ký</Link>
+                    </>
                 )}
             </nav>
         </header>

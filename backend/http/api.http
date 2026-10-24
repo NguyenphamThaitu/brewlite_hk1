@@ -91,3 +91,19 @@ Idempotency-Key: key-test-010
 Content-Type: application/json
 
 { "orderId": 3, "method": "CARD" }
+
+### thanh toan lan 1 (key moi)
+POST http://localhost:3001/payments
+Authorization: Bearer {{token}}
+Idempotency-Key: key-idem-001
+Content-Type: application/json
+
+{ "orderId": 5, "method": "WALLET" }
+
+### thanh toan lan 2 (CUNG key, mong doi ket qua y het, khong loi)
+POST http://localhost:3001/payments
+Authorization: Bearer {{token}}
+Idempotency-Key: key-idem-001
+Content-Type: application/json
+
+{ "orderId": 5, "method": "WALLET" }

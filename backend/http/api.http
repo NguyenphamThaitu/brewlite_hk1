@@ -83,3 +83,11 @@ Idempotency-Key: key-test-003
 Content-Type: application/json
 
 { "orderId": 2, "method": "CARD", "simulateFail": true }
+
+### thanh toan lai don da PAID (mong doi 400)
+POST http://localhost:3001/payments
+Authorization: Bearer {{token}}
+Idempotency-Key: key-test-010
+Content-Type: application/json
+
+{ "orderId": 3, "method": "CARD" }

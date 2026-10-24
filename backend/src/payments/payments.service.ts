@@ -7,7 +7,7 @@ import { OrderStatus, PaymentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MockGateway } from './mock-gateway';
 import { PayDto } from './pay.dto';
-
+import { assertTransition } from '../orders/order-state';
 @Injectable()
 export class PaymentsService {
   constructor(
@@ -20,11 +20,12 @@ export class PaymentsService {
       where: { id: dto.orderId, userId },
     });
     if (!order) throw new NotFoundException('Không tìm thấy đơn hàng');
-    if (
-      order.status !== OrderStatus.PENDING &&
-      order.status !== OrderStatus.PAYMENT_FAILED
-    )
-      throw new BadRequestException('Đơn không ở trạng thái có thể thanh toán');
+    // PAYMENT_FAILED -> PENDING là "thử lại"
+    let from = order.status;
+    if (from === OrderStatus.PAYMENT_FAILED) {
+      assertTransition(from, OrderStatus.PENDING);
+      from = OrderStatus.PENDING;
+    }
 
     const { ok } = await this.gateway.charge(
       order.total,
@@ -32,6 +33,7 @@ export class PaymentsService {
       dto.simulateFail,
     );
     const status = ok ? OrderStatus.PAID : OrderStatus.PAYMENT_FAILED;
+    assertTransition(from, status); // đơn đã PAID mà trả lại => 400
 
     await this.prisma.$transaction([
       this.prisma.payment.create({

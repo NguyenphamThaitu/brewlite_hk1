@@ -107,3 +107,10 @@ Idempotency-Key: key-idem-001
 Content-Type: application/json
 
 { "orderId": 5, "method": "WALLET" }
+
+### tao don co ma khuyen mai (mong doi discount 10%)
+POST http://localhost:3001/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "items": [{ "productId": 1, "size": "M", "toppings": ["Kem"], "qty": 2 }], "promoCode": "BREW10" }

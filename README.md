@@ -83,6 +83,9 @@ Code Task 4 (trang chi tiết, `pricing.ts`) được commit chung với Task 5.
 ## Thành viên nhóm
 | Họ tên | MSSV | Vai trò |
 |---|---|---|
-| (điền) | (điền) | Product Owner |
-| (điền) | (điền) | Scrum Master |
-| (điền) | (điền) | Developer |
+| Nguyễn Phạm Thái Tú | 3124410385 | Developer chính |
+| Quách Văn Trường | 3124410384 | Scrum Master |
+| Đặng Tuấn Vỹ | 3124410412 | Product Owner |
+| La Hữu Mẫn | 3122410235 | Tester |
+| Quách Anh Vũ | 3124410410 | Tester, Reviewer |
+| Trần Minh Trí | 3124410371 | Tài liệu, Demo |

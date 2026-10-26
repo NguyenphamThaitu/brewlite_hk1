@@ -1,11 +1,14 @@
 # Tài liệu Scrum - BrewLite
 
 ## 1. Vai trò
-| Vai trò | Họ tên | MSSV |
-|---|---|---|
-| Product Owner | (điền) | (điền) |
-| Scrum Master | (điền) | (điền) |
-| Developer | (điền) | (điền) |
+| Vai trò | Họ tên | MSSV | Phụ trách |
+|---|---|---|---|
+| Developer chính | Nguyễn Phạm Thái Tú | 3124410385 | Code, Docker, Git, kiểm thử tự động |
+| Scrum Master | Quách Văn Trường | 3124410384 | Daily Scrum, Burndown, Review, Retrospective |
+| Product Owner | Đặng Tuấn Vỹ | 3124410412 | Backlog, nghiệm thu, phản hồi |
+| Tester | La Hữu Mẫn | 3122410235 | Test luồng chính |
+| Tester, Reviewer | Quách Anh Vũ | 3124410410 | Test trường hợp lỗi, review Pull Request |
+| Tài liệu, Demo | Trần Minh Trí | 3124410371 | README, slide, dẫn demo |
 
 ## 2. Product Backlog
 | # | Task | Sprint | Điểm | Trạng thái |

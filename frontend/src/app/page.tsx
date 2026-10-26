@@ -19,16 +19,22 @@ export default function MenuPage() {
         <h1 className="mb-4 border-b border-gray-300 pb-3 text-center text-2xl font-semibold uppercase tracking-wide">
           Menu
         </h1>
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
           {data.map((p) => (
               <Link
                   key={p.id}
                   href={`/products/${p.id}`}
-                  className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-lg"
+                  className="group flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-lg"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.imageUrl} alt={p.name} className="h-44 w-full object-cover transition group-hover:scale-105" />
-                <div className="p-3">
+                <div className="aspect-square w-full overflow-hidden bg-gray-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                      src={p.imageUrl}
+                      alt={p.name}
+                      className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col justify-between p-3">
                   <div className="font-semibold uppercase group-hover:text-[#c4956a]">{p.name}</div>
                   <div className="font-semibold text-[#c4956a]">{vnd(p.price)}</div>
                 </div>

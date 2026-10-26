@@ -34,7 +34,7 @@ export default function CartPage() {
             ))}
             <div className="text-lg font-bold">Tổng: {vnd(cartTotal(items))}</div>
             <button
-                className="rounded bg-amber-700 px-4 py-2 text-white"
+                className="rounded bg-[#c4956a] hover:bg-[#a97b52] px-4 py-2 text-white"
                 onClick={() => router.push(token ? '/checkout' : '/login')}
             >
                 Thanh toán

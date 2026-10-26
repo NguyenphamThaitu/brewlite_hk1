@@ -14,6 +14,7 @@ export default function CheckoutPage() {
     const token = useAuth((s) => s.token);
 
     const [method, setMethod] = useState<'WALLET' | 'CARD'>('WALLET');
+    const [promo, setPromo] = useState('');
     const [fail, setFail] = useState(false);
     const [orderId, setOrderId] = useState<number | null>(null);
     const [error, setError] = useState('');
@@ -43,6 +44,7 @@ export default function CheckoutPage() {
                             toppings: i.toppings,
                             qty: i.qty,
                         })),
+                        promoCode: promo.trim() || undefined,
                     }),
                 });
                 id = o.id;
@@ -71,7 +73,14 @@ export default function CheckoutPage() {
     return (
         <div className="max-w-sm space-y-3">
             <h1 className="text-xl font-bold">Thanh toán</h1>
-            <div>Tổng: {vnd(cartTotal(items))}</div>
+            <div>Tạm tính: {vnd(cartTotal(items))}</div>
+            <input
+                className="w-full rounded border p-2"
+                placeholder="Mã khuyến mãi (vd: BREW10)"
+                value={promo}
+                onChange={(e) => setPromo(e.target.value)}
+                disabled={!!orderId}
+            />
             <label className="block">
                 <input type="radio" checked={method === 'WALLET'} onChange={() => setMethod('WALLET')} /> Ví điện tử
             </label>
@@ -83,11 +92,7 @@ export default function CheckoutPage() {
                 <input type="checkbox" checked={fail} onChange={(e) => setFail(e.target.checked)} /> (Demo) Giả lập thanh toán lỗi
             </label>
             {error && <p className="text-red-600">{error}</p>}
-            <button
-                disabled={loading}
-                onClick={submit}
-                className="rounded bg-amber-700 px-4 py-2 text-white"
-            >
+            <button disabled={loading} onClick={submit} className="rounded bg-[#c4956a] hover:bg-[#a97b52] px-4 py-2 text-white">
                 {loading ? 'Đang xử lý...' : 'Xác nhận trả'}
             </button>
         </div>

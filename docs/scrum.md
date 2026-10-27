@@ -41,9 +41,33 @@
 |---|---|---|---|
 | 26/10/2026 (Thứ Hai) | Đã họp nhóm 15 phút và thống nhất phân công công việc; chưa triển khai các đầu việc mới tại thời điểm họp. | Các thành viên bắt đầu thực hiện nhiệm vụ đã nhận. Trường viết unit test cho `vnd()` và `cartCount()`, theo dõi Daily và chuẩn bị Burndown. | Chưa có thông tin được xác nhận về vướng mắc trong buổi họp. |
 
+### Cập nhật công việc thứ Ba, 27/10/2026
+
+- Nguồn ghi nhận: nội dung 4 thành viên gửi cho Scrum Master và đối chiếu mã nguồn trên nhánh `main`.
+- Đây là bản tổng hợp thông tin đã nhận. Giờ họp, thời lượng thực tế và danh sách người tham dự Daily thứ Ba chưa được cung cấp để bổ sung vào biên bản.
+- Các mô tả kiểm thử dưới đây là phạm vi công việc thành viên gửi; kết quả Đạt/Không đạt hoặc PASS/FAIL chỉ được ghi nhận khi có báo cáo thực tế.
+
+| Thành viên | Nội dung đã nhận | Đối chiếu repository | Việc tiếp theo / thông tin cần bổ sung |
+|---|---|---|---|
+| La Hữu Mẫn - Tester luồng chính | Hiện nhãn "Hết hàng", khóa nút "Thêm vào giỏ" khi stock = 0; kiểm thử đổi size/topping, giỏ hàng, đăng ký email mới, thanh toán Ví và "Đơn của tôi". Phạm vi nghiệm thu: Task 3, 4, 5, 8, 9. | `frontend/src/app/products/[id]/page.tsx` đã có kiểm tra `stock <= 0`, nhãn hết hàng và khóa/chặn thêm vào giỏ trên `main`. | Bổ sung bảng Đạt/Không đạt cho từng bước đã chạy và ảnh lỗi nếu có. Nội dung đã nhận chưa kèm kết quả kiểm thử từng bước. |
+| Quách Anh Vũ - Tester lỗi, Reviewer | Bổ sung `backend/http/api.http`; kiểm thử đăng ký trùng email, sai mật khẩu, giỏ rỗng, mã sai/BREW10, thanh toán thành công/thất bại, dùng lại Idempotency-Key và thanh toán lại sau lỗi; review/Approve các PR. Phạm vi nghiệm thu: Task 6, 7, 8, 9, 10. | File HTTP đã có các request mẫu và kết quả mong đợi; PR #3 đã merge vào `main`. Chưa có review/Approve được ghi nhận trên GitHub ở PR #1-#4 tại thời điểm đối chiếu. | Bổ sung bảng PASS/FAIL thực tế và ghi nhận review theo phân công. Request mẫu và trạng thái PR đã merge chưa thay thế cho kết quả chạy test hoặc xác nhận review. |
+| Đặng Tuấn Vỹ - Product Owner | Thêm tìm món theo tên trên Menu, lọc phía trình duyệt; nghiệm thu Task 1, 2, 3, 4, 8, 9; viết phản hồi khách hàng và backlog bản sau. | Tìm kiếm đã có trong `frontend/src/app/page.tsx`; PR #4 đã merge. Mục 10 đã có nghiệm thu sơ bộ dựa trên source, phản hồi mô phỏng và backlog. | Xác nhận kết quả chạy thực tế trước khi chốt nghiệm thu; bổ sung phản hồi thực tế sau Review nếu có. Giữ rõ phạm vi đánh giá sơ bộ của mục 10. |
+| Trần Minh Trí - Tài liệu, Demo | Thêm trang 404 tiếng Việt, footer gắn vào layout; cập nhật tên/MSSV và hướng dẫn README theo thay đổi code. | `not-found.tsx`, `footer.tsx` và phần gắn Footer vào `layout.tsx` đã có trên `main`; PR #1 đã merge. README đã có tên/MSSV các thành viên và nội dung chức năng mới. | Rà soát tài liệu khớp bản demo và chuẩn bị phần trình diễn sáng thứ Tư. |
+
+**Cập nhật phần việc Scrum Master - Quách Văn Trường:** PR #2 đã merge vào `main`, gồm 12 unit test cho `vnd()` và `cartCount()`, hướng dẫn chạy test và ghi nhận buổi họp thứ Hai. Khi tích hợp với thay đổi mới của nhóm, 12 test, lint và build đã chạy thành công. Đang tổng hợp báo cáo thứ Ba và chờ dữ liệu SP để hoàn thiện Burndown.
+
+**Kế hoạch tiếp theo:**
+
+1. Tổng hợp bảng kết quả kiểm thử thực tế từ Mẫn và Vũ; ghi rõ lỗi, người xử lý và bằng chứng nếu có.
+2. Hoàn thiện thông tin buổi Daily thứ Ba theo thực tế, gồm thời gian và người tham dự.
+3. Xác nhận Sprint đang theo dõi, story points từng hạng mục, tổng SP ban đầu và SP còn lại theo ngày để vẽ Burndown; gửi biên bản và ảnh biểu đồ cho người tổng hợp theo hạn nhóm đã chốt.
+4. Chuẩn bị Sprint Review và Retrospective sáng thứ Tư, 28/10/2026; ghi kết quả sau khi các buổi họp diễn ra.
+
 ## 5. Burndown
 
 **Trạng thái: chờ số liệu thực tế để vẽ biểu đồ.** Hiện chưa xác nhận tổng story points của Sprint và số story points còn lại theo từng ngày.
+
+Cập nhật ngày 27/10/2026: nội dung 4 thành viên gửi chưa có bảng SP theo ngày. Danh sách nhiệm vụ và việc code đã merge không đủ để suy ra tổng SP hoặc lịch sử SP còn lại.
 
 Story points (SP) là đơn vị nhóm dùng để ước lượng khối lượng và độ phức tạp của công việc. Nhóm cần thống nhất ước lượng cho các hạng mục trong Sprint, xác nhận ngày bắt đầu/kết thúc và cập nhật SP còn lại theo từng ngày. Cột "Điểm" (1 điểm/task) trong Product Backlog theo đề bài là điểm đánh giá, chưa có căn cứ để coi đó là story points.
 

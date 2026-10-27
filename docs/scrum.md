@@ -30,11 +30,25 @@
 - **Sprint 3** (Task 8-10): Thanh toán, bàn giao, nghiệp vụ nâng cao.
 
 ## 4. Daily Scrum
+
+### Ghi nhận cuộc họp thứ Hai, 26/10/2026
+
+- Thời lượng: 15 phút.
+- Nội dung thực tế: trao đổi và phân công công việc cho các thành viên.
+- Tiến độ tại thời điểm họp: các đầu việc mới được giao chưa bắt đầu thực hiện.
+
 | Ngày | Đã làm | Sẽ làm | Vướng mắc |
 |---|---|---|---|
-| (điền) | (điền) | (điền) | (điền) |
+| 26/10/2026 (Thứ Hai) | Đã họp nhóm 15 phút và thống nhất phân công công việc; chưa triển khai các đầu việc mới tại thời điểm họp. | Các thành viên bắt đầu thực hiện nhiệm vụ đã nhận. Trường viết unit test cho `vnd()` và `cartCount()`, theo dõi Daily và chuẩn bị Burndown. | Chưa có thông tin được xác nhận về vướng mắc trong buổi họp. |
 
 ## 5. Burndown
+
+**Trạng thái: chờ số liệu thực tế để vẽ biểu đồ.** Hiện chưa xác nhận tổng story points của Sprint và số story points còn lại theo từng ngày.
+
+Story points (SP) là đơn vị nhóm dùng để ước lượng khối lượng và độ phức tạp của công việc. Nhóm cần thống nhất ước lượng cho các hạng mục trong Sprint, xác nhận ngày bắt đầu/kết thúc và cập nhật SP còn lại theo từng ngày. Cột "Điểm" (1 điểm/task) trong Product Backlog theo đề bài là điểm đánh giá, chưa có căn cứ để coi đó là story points.
+
+Chỉ vẽ đường thực tế (Actual) khi có số liệu đã được xác nhận; chưa điền số SP hoặc tạo ảnh Burndown khi thiếu dữ liệu.
+
 - Sprint 1: (chèn ảnh)
 - Sprint 2: (chèn ảnh)
 - Sprint 3: (chèn ảnh)

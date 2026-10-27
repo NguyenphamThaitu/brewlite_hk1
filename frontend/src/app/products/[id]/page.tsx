@@ -22,6 +22,7 @@ export default function ProductDetail() {
     if (error || !p) return <p className="text-red-600">Không tìm thấy sản phẩm</p>;
 
     const price = unitPrice(p.price, size, toppings);
+    const isOutOfStock = p.stock <= 0;
     const toggle = (t: string) =>
         setToppings((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
 
@@ -31,6 +32,11 @@ export default function ProductDetail() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.imageUrl} alt={p.name} className="h-48 w-full rounded object-cover" />
             <div>Giá: {vnd(price)}</div>
+            {isOutOfStock && (
+                <p className="font-semibold text-red-600">
+                    Hết hàng
+                </p>
+            )}
             <div className="flex gap-2">
                 {(Object.keys(SIZE_EXTRA) as Size[]).map((s) => (
                     <button
@@ -49,9 +55,13 @@ export default function ProductDetail() {
                     </label>
                 ))}
             </div>
+            
             <button
-                className="rounded bg-amber-700 px-4 py-2 text-white"
+                disabled={isOutOfStock}
+                className="rounded bg-amber-700 px-4 py-2 text-white disabled:cursor-not-allowed disabled:bg-gray-400"
                 onClick={() => {
+                    if (isOutOfStock) return;
+
                     add({
                         productId: p.id,
                         name: p.name,
@@ -63,8 +73,9 @@ export default function ProductDetail() {
                     router.push('/cart');
                 }}
             >
-                Thêm vào giỏ
+                {isOutOfStock ? 'Hết hàng' : 'Thêm vào giỏ'}
             </button>
+
         </div>
     );
 }

@@ -70,6 +70,26 @@ docker compose up --build
 Size S +0đ, M +5.000đ, L +10.000đ. Topping Trân châu +5.000đ, Kem +5.000đ.
 
 ## Chạy test
+
+### Frontend: unit test
+
+Yêu cầu Node.js 24.x (khuyến nghị) hoặc Node.js 22.x từ 22.12.0. Chạy trong thư mục frontend:
+
+```bash
+cd frontend
+npm ci
+npm test
+```
+
+`npm test` chạy toàn bộ unit test một lần rồi thoát. Dùng `npm run test:watch` để tự chạy lại khi sửa code.
+
+- `src/lib/api.test.ts`: kiểm tra `vnd()` định dạng số theo kiểu Việt Nam và thêm ký hiệu `đ`, gồm số 0, số nhỏ hơn 1.000, hàng nghìn, hàng triệu và số thập phân.
+- `src/store/cart.test.ts`: kiểm tra `cartCount()` cộng tổng `qty`, gồm giỏ rỗng, một hoặc nhiều dòng, số lượng 0 và việc giữ nguyên dữ liệu đầu vào.
+
+Hai hàm được gọi trực tiếp với dữ liệu mẫu, không cần chạy Docker, backend hoặc database.
+
+### Backend
+
 ```bash
 cd backend
 npm test

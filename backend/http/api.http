@@ -114,3 +114,31 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "items": [{ "productId": 1, "size": "M", "toppings": ["Kem"], "qty": 2 }], "promoCode": "BREW10" }
+### Ma khuyen mai sai (mong doi 400)
+POST http://localhost:3001/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productId": 1,
+      "size": "M",
+      "toppings": ["Kem"],
+      "qty": 2
+    }
+  ],
+  "promoCode": "SAI999"
+}
+
+### Thanh toan lai sau khi loi (key moi)
+POST http://localhost:3001/payments
+Authorization: Bearer {{token}}
+Idempotency-Key: key-retry-after-fail-001
+Content-Type: application/json
+
+{
+  "orderId": 2,
+  "method": "CARD",
+  "simulateFail": false
+}

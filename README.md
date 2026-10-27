@@ -1,7 +1,6 @@
-# ☕ BrewLite — Cashless Coffee Ordering System
+# BrewLite — Cashless Coffee Ordering System
 
-> **Dự án Bài tập lớn môn Công nghệ Phần mềm — Đại học Sài Gòn (SGU)**  
-> Ứng dụng web đặt cà phê và thanh toán không dùng tiền mặt, phát triển theo quy trình **Agile Scrum**.
+Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ án môn **Công nghệ Phần mềm** — Trường Đại học Sài Gòn (SGU), phát triển theo quy trình **Agile Scrum**.
 
 ---
 
@@ -18,195 +17,132 @@
 
 ---
 
-## 🚀 Công nghệ sử dụng (Tech Stack)
+## 🛠 Công nghệ sử dụng
 
-- **Frontend:** Next.js (App Router, React 19, TypeScript), TailwindCSS, TanStack React Query v5, Zustand (State Management & Persistence).
-- **Backend:** NestJS, TypeScript, RESTful API, Prisma ORM, Passport & JWT Authentication, Class Validator.
-- **Cơ sở dữ liệu:** PostgreSQL 16.
-- **Thanh toán:** Mock Cashless Payment Gateway (Ví điện tử & Thẻ ngân hàng), cơ chế chống trùng lặp **Idempotency-Key**.
-- **DevOps & Container:** Docker, Docker Compose.
-- **Kiểm thử (Testing):** Vitest (Frontend unit tests), Jest & Supertest (Backend unit & E2E tests).
+- **Frontend:** Next.js 16 (App Router, React 19, TypeScript), TailwindCSS v4, TanStack React Query v5, Zustand.
+- **Backend:** NestJS 12, TypeScript, Prisma ORM 6, Passport JWT, class-validator.
+- **Database:** PostgreSQL 16.
+- **Thanh toán:** Mock Gateway (Ví điện tử & Thẻ ngân hàng), cơ chế chống trùng lặp **Idempotency-Key**.
+- **Container & DevOps:** Docker, Docker Compose.
+- **Testing:** Vitest (Frontend unit tests), Jest & Supertest (Backend unit & E2E tests).
 
 ---
 
 ## ✨ Các chức năng chính (Features)
 
-### 1. 📋 Xem Menu & Tìm kiếm đồ uống (Menu & Search)
-- **Danh sách món trực quan:** Hiển thị danh mục thức uống với hình ảnh sắc nét, tên món và giá tiền định dạng chuẩn Việt Nam (`VND`).
-- **Tìm kiếm tức thì (Client-side Search):** Tìm món theo tên trực tiếp trên trình duyệt không cần gọi lại API. Hỗ trợ chuẩn hóa tiếng Việt (tìm kiếm không dấu hoặc có dấu, không phân biệt hoa thường).
-- **Giao diện phản hồi:** Xử lý mượt mà các trạng thái đang tải (Loading Skeleton), không tìm thấy món phù hợp và thông báo lỗi kết nối.
-
-### 2. 🧋 Chi tiết món & Tùy chọn (Customization)
-- **Tùy chọn kích cỡ (Size):** Hỗ trợ 3 kích cỡ **S** (+0đ), **M** (+5.000đ), **L** (+10.000đ) với giá tiền cập nhật theo thời gian thực.
-- **Tùy chọn Topping:** Cho phép chọn nhiều topping đi kèm (Trân châu +5.000đ, Kem +5.000đ).
-- **Kiểm tra tồn kho (Stock Checking):** Tự động phát hiện món hết hàng, hiển thị nhãn cảnh báo đỏ và vô hiệu hóa nút thêm vào giỏ.
-
-### 3. 🛒 Giỏ hàng thông minh (Shopping Cart)
-- **Quản lý trạng thái với Zustand:** Lưu trữ và đồng bộ giỏ hàng an toàn với cơ chế chống lỗi Hydration mismatch trên Next.js SSR.
-- **Thao tác linh hoạt:** Tăng / giảm số lượng từng món trực tiếp, xóa món, tự động tính tổng tiền giỏ hàng (`cartTotal`).
-- **Huy hiệu số lượng (Badge):** Hiển thị số lượng món trên thanh Header theo thời gian thực.
-- **Điều hướng thông minh:** Tự động chuyển hướng sang trang Đăng nhập nếu khách chưa có phiên đăng nhập khi bấm "Thanh toán".
-
-### 4. 🔐 Xác thực người dùng (Authentication - JWT)
-- **Đăng ký & Đăng nhập:** Hệ thống mã hóa mật khẩu an toàn bằng `bcrypt`, cấp phát và xác thực qua JSON Web Token (JWT).
-- **Phân quyền truy cập (Guards):** Bảo vệ các thao tác nhạy cảm (tạo đơn, thanh toán, xem lịch sử đơn) qua `JwtAuthGuard`.
-- **Thanh Header thích ứng:** Tự động cập nhật menu điều hướng khi đăng nhập thành công (hiển thị mục "Đơn của tôi", nút "Đăng xuất").
-
-### 5. 💳 Thanh toán không dùng tiền mặt (Cashless Payment)
-- **Phương thức thanh toán:** Hỗ trợ thanh toán qua **Ví điện tử (E-Wallet)** hoặc **Thẻ ngân hàng (Card)** theo đúng tiêu chí 100% Cashless.
-- **Mã khuyến mãi (Promotion):** Hỗ trợ nhập voucher giảm giá (mã demo `BREW10` giảm 10% tổng đơn hàng).
-- **An toàn giao dịch với Idempotency-Key:** Header `Idempotency-Key` (chuẩn UUID) ngăn chặn việc trừ tiền hoặc tạo đơn trùng lặp khi người dùng bấm thanh toán nhiều lần hoặc mất kết nối mạng.
-- **Giả lập lỗi thanh toán (Simulate Fail):** Hỗ trợ checkbox kiểm thử luồng lỗi thanh toán. Khi gặp lỗi, giỏ hàng vẫn được giữ nguyên để khách hàng có thể thử lại an toàn.
-- **Tích lũy điểm thưởng thành viên (Loyalty Points):** Tự động cộng 1 điểm cho mỗi 10.000đ khi đơn hàng thanh toán thành công.
-
-### 6. 📦 Trạng thái & Lịch sử đơn hàng (Order Tracking)
-- **Xác nhận đặt hàng (`/confirmation/[orderId]`):** Màn hình xác nhận thành công ngay sau khi thanh toán, hiển thị mã đơn, trạng thái đơn và hướng dẫn đến quầy nhận nước.
-- **Lịch sử đơn của tôi (`/orders`):** Người dùng dễ dàng theo dõi toàn bộ các đơn hàng đã đặt, trạng thái đơn (`PENDING`, `PAID`, `PAYMENT_FAILED`,...), chi tiết món, size, số lượng và tổng thanh toán.
-- **Máy trạng thái đơn hàng (Order State Machine):** Quản lý nghiêm ngặt chuyển đổi trạng thái ở Backend: `PENDING` ➔ `PAID` / `PAYMENT_FAILED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED`.
-
-### 7. 🎨 Giao diện người dùng & Tiện ích (UI/UX)
-- **Trang 404 tùy biến (`not-found.tsx`):** Giao diện thông báo lỗi trang đẹp mắt với hiệu ứng nền lơ lửng (glassmorphism blobs), biểu tượng ly cà phê động và nút chuyển hướng về trang chủ.
-- **Thanh Footer đồng bộ:** Cung cấp liên kết nhanh (Trang chủ, Giỏ hàng, Đơn hàng), thông tin thương hiệu BrewLite và thông tin bản quyền sinh viên.
+- **Xem Menu & Tìm kiếm:** Hiển thị danh mục món từ API (`GET /products`), lọc tìm kiếm tức thì phía client hỗ trợ chuẩn hóa tiếng Việt (bỏ dấu), kiểm soát tồn kho (`stock <= 0` hiển thị hết hàng).
+- **Chi tiết món & Tùy biến:** Tùy chọn size (S: +0đ, M: +5.000đ, L: +10.000đ) và topping (Trân châu: +5.000đ, Kem: +5.000đ); đồng bộ công thức tính giá giữa frontend và backend.
+- **Giỏ hàng (Shopping Cart):** Quản lý state với Zustand (xử lý hydration an toàn trên SSR); hỗ trợ tăng/giảm số lượng, xóa món, tự động tính tổng tiền và cập nhật badge số lượng trên header.
+- **Xác thực người dùng (Auth):** Đăng ký/Đăng nhập bảo mật với Bcrypt + JWT; bảo vệ các endpoint nghiệp vụ bằng `JwtAuthGuard`; tự động chuyển đổi giao diện theo trạng thái đăng nhập.
+- **Thanh toán không tiền mặt:** Hỗ trợ thanh toán qua Ví điện tử hoặc Thẻ ngân hàng; áp dụng mã giảm giá (`BREW10` giảm 10%); cơ chế **Idempotency-Key** (UUID) chống lặp giao dịch; hỗ trợ giả lập lỗi thanh toán (giữ nguyên giỏ hàng để thử lại); tự động cộng điểm thưởng (1 điểm / 10.000đ).
+- **Theo dõi & Lịch sử đơn hàng:** Trang xác nhận đơn (`/confirmation/[orderId]`); lịch sử đơn của tôi (`/orders`); quản lý vòng đời đơn hàng qua Order State Machine (`PENDING` ➔ `PAID` / `PAYMENT_FAILED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED`).
+- **Giao diện & Điều hướng:** Trang lỗi 404 tùy biến (`not-found.tsx`) hỗ trợ quay lại trang chủ; Header và Footer đồng bộ thương hiệu và liên kết điều hướng.
 
 ---
 
-## 🛠 Hướng dẫn chạy dự án
+## 🚀 Hướng dẫn chạy dự án
 
 ### Yêu cầu tiên quyết
-- **Node.js:** Phiên bản 22.x trở lên (khuyến nghị Node 22.12+ hoặc Node 24.x).
-- **Docker & Docker Desktop:** Đang bật và hoạt động.
-- **Git**
+- Node.js LTS (>= 22.12.0)
+- Docker & Docker Desktop
+- Git
 
----
-
-### Cách 1: Khởi chạy toàn bộ bằng Docker (Khuyến nghị)
-
-Chỉ cần một câu lệnh duy nhất để khởi tạo và chạy Database, Backend API và Frontend:
+### Cách 1: Khởi chạy bằng Docker (Khuyến nghị để chấm bài)
 
 ```bash
 docker compose up --build
 ```
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:3001
+- **Database:** `localhost:5432` (PostgreSQL)
 
-- **Frontend Web:** [http://localhost:3000](http://localhost:3000)
-- **Backend API:** [http://localhost:3001](http://localhost:3001)
-- **PostgreSQL Database:** `localhost:5432`
-
-> **Lưu ý:** Lần đầu khởi tạo Docker sẽ mất 2–3 phút để tải image và cài đặt thư viện. Container backend sẽ tự động chạy lệnh di chuyển schema database (migration) và nạp dữ liệu mẫu (seed) vào CSDL.  
-> **Dừng hệ thống:** Nhấn `Ctrl + C` hoặc mở terminal chạy `docker compose down`.
+*(Backend container tự động chạy migrate database và nạp dữ liệu mẫu ban đầu. Dừng hệ thống bằng `Ctrl+C` hoặc `docker compose down`)*.
 
 ---
 
-### Cách 2: Khởi chạy môi trường phát triển cục bộ (Local Development)
+### Cách 2: Chạy môi trường Local Development
 
-#### Bước 1: Khởi động CSDL PostgreSQL
-Chạy database trong container ngầm:
+**1. Khởi động PostgreSQL qua Docker:**
 ```bash
 docker compose up -d db
 ```
 
-#### Bước 2: Thiết lập và chạy Backend (NestJS)
-Mở một terminal mới:
+**2. Khởi chạy Backend (NestJS):**
 ```bash
 cd backend
-
-# 1. Tạo file cấu hình môi trường
 cp .env.example .env
-
-# 2. Cài đặt các gói phụ thuộc
 npm install
-
-# 3. Tạo Prisma Client và đồng bộ CSDL
 npx prisma generate
-npx prisma migrate dev       # Hoặc dùng: npx prisma db push (đồng bộ schema trực tiếp)
-
-# 4. Nạp dữ liệu mẫu (menu và mã giảm giá)
-npx prisma db seed
-
-# 5. Khởi chạy server backend ở chế độ watch
+npx prisma migrate dev       # Hoặc: npx prisma db push
+npx prisma db seed          # Nạp dữ liệu menu và mã giảm giá
 npm run start:dev
 ```
 
-#### Bước 3: Thiết lập và chạy Frontend (Next.js)
-Mở thêm một terminal khác:
+**3. Khởi chạy Frontend (Next.js - terminal mới):**
 ```bash
 cd frontend
-
-# 1. Tạo file cấu hình môi trường
 cp .env.example .env.local
-
-# 2. Cài đặt các gói phụ thuộc
 npm install
-
-# 3. Khởi chạy máy chủ frontend
 npm run dev
 ```
-
-Truy cập ứng dụng tại: [http://localhost:3000](http://localhost:3000).
 
 ---
 
 ## ⚙️ Biến môi trường
 
-| Biến | Nơi áp dụng | Giá trị mẫu | Ý nghĩa |
+| Biến | Vị trí | Giá trị mẫu | Ý nghĩa |
 |---|---|---|---|
-| `DATABASE_URL` | backend | `postgresql://brew:brew@localhost:5432/brewlite` | Chuỗi kết nối PostgreSQL |
-| `JWT_SECRET` | backend | `change-me-secret-key` | Khóa bí mật dùng để ký và xác thực JWT token |
-| `CORS_ORIGIN` | backend | `http://localhost:3000` | Địa chỉ frontend được phép gọi API |
-| `PORT` | backend | `3001` | Cổng dịch vụ NestJS |
-| `NEXT_PUBLIC_API_URL` | frontend | `http://localhost:3001` | Địa chỉ Backend API để Next.js giao tiếp |
+| `DATABASE_URL` | backend | `postgresql://brew:brew@localhost:5432/brewlite` | Kết nối PostgreSQL |
+| `JWT_SECRET` | backend | `change-me` | Secret key ký JWT |
+| `CORS_ORIGIN` | backend | `http://localhost:3000` | Cấp phép CORS cho frontend |
+| `PORT` | backend | `3001` | Cổng chạy Backend API |
+| `NEXT_PUBLIC_API_URL` | frontend | `http://localhost:3001` | URL Backend API |
 
 ---
 
-## 🎁 Dữ liệu mẫu Demo
+## 📡 Danh sách API Endpoints
 
-- **Menu đồ uống (Seed tự động):**
-  1. Cà phê sữa — 35.000đ
-  2. Americano — 40.000đ
-  3. Cappuccino — 45.000đ
-  4. Trà đào — 39.000đ
-- **Tùy chọn kích cỡ (Size):** Size S (+0đ), Size M (+5.000đ), Size L (+10.000đ).
-- **Tùy chọn Topping:** Trân châu (+5.000đ), Kem (+5.000đ).
-- **Mã khuyến mãi:** `BREW10` (giảm 10% trên tổng đơn hàng).
-- **Tài khoản người dùng:** Đăng ký trực tiếp tại trang `/register` hoặc sử dụng tài khoản tự tạo.
-
----
-
-## 📡 Danh sách API Endpoint
-
-| Phương thức | Endpoint | Yêu cầu Auth | Chức năng |
+| Method | Endpoint | Auth | Mô tả |
 |---|---|:---:|---|
-| `GET` | `/products` | Không | Lấy danh sách toàn bộ sản phẩm menu |
-| `GET` | `/products/:id` | Không | Lấy thông tin chi tiết một sản phẩm |
-| `POST` | `/auth/register` | Không | Đăng ký tài khoản người dùng mới |
+| `GET` | `/products` | Không | Danh sách sản phẩm menu |
+| `GET` | `/products/:id` | Không | Chi tiết sản phẩm |
+| `POST` | `/auth/register` | Không | Đăng ký tài khoản mới |
 | `POST` | `/auth/login` | Không | Đăng nhập và nhận JWT token |
-| `POST` | `/orders` | Bearer JWT | Tạo đơn hàng mới (trạng thái ban đầu `PENDING`) |
-| `POST` | `/payments` | Bearer JWT | Thực hiện thanh toán (kèm header `Idempotency-Key`) |
-| `GET` | `/orders/me` | Bearer JWT | Lấy danh sách lịch sử đơn hàng của người dùng |
+| `POST` | `/orders` | Bearer JWT | Tạo đơn hàng mới (`PENDING`) |
+| `POST` | `/payments` | Bearer JWT | Thanh toán đơn hàng (Header `Idempotency-Key`) |
+| `GET` | `/orders/me` | Bearer JWT | Lịch sử đơn hàng của người dùng |
 
 ---
 
-## 🧪 Hướng dẫn chạy kiểm thử (Testing)
+## 🎁 Dữ liệu demo & Giá quy ước
 
-### 1. Frontend Unit Test (Vitest)
-Kiểm thử định dạng tiền tệ `vnd()` và hàm tính tổng số lượng món trong giỏ hàng `cartCount()`.
+- **Menu mẫu (Seed tự động):** Cà phê sữa (35.000đ), Americano (40.000đ), Cappuccino (45.000đ), Trà đào (39.000đ).
+- **Quy chuẩn giá:** Size S (+0đ), M (+5.000đ), L (+10.000đ). Topping Trân châu (+5.000đ), Kem (+5.000đ).
+- **Mã khuyến mãi:** `BREW10` (giảm 10% tổng hóa đơn).
+- **Tài khoản:** Đăng ký tự do tại `/register`.
 
+---
+
+## 🧪 Kiểm thử tự động (Testing)
+
+### Frontend (Vitest)
+Kiểm tra logic hàm định dạng tiền `vnd()` và hàm tính tổng số lượng món `cartCount()`:
 ```bash
 cd frontend
 npm test            # Chạy kiểm thử một lần
-npm run test:watch  # Chạy kiểm thử tự động theo dõi khi sửa code
+npm run test:watch  # Chạy theo dõi tự động
 ```
 
-### 2. Backend Unit & E2E Test (Jest & Supertest)
-Kiểm thử logic máy trạng thái đơn hàng (`order-state.spec.ts`) và kiểm thử tích hợp toàn bộ luồng nghiệp vụ API Task 10 (`task10.e2e-spec.ts`).
-
+### Backend (Jest & Supertest)
+Kiểm tra Order State Machine và tích hợp toàn bộ luồng nghiệp vụ API:
 ```bash
 cd backend
-npm test            # Chạy unit tests
-npm run test:e2e    # Chạy kiểm thử E2E (yêu cầu Docker DB đang chạy)
+npm test            # Unit tests
+npm run test:e2e    # E2E integration tests (yêu cầu Docker DB đang chạy)
 ```
 
 ---
 
-## 📌 Ghi chú phát triển & Git
-- Mã nguồn Task 4 (Trang chi tiết, `pricing.ts`) được tích hợp chung trong commit của Task 5.
-- Dự án tuân thủ nghiêm ngặt quy trình Agile Scrum: Definition of Done được kiểm soát qua việc review code, viết test tự động và tài liệu hóa trong thư mục `docs/`.
+## 📌 Ghi chú phát triển
+- Code Task 4 (chi tiết & pricing) được commit chung với Task 5 (giỏ hàng).
+- Quy trình kiểm thử, Definition of Done và biên bản Agile Scrum được lưu chi tiết trong thư mục `docs/`.

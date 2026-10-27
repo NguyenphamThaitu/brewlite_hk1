@@ -1,0 +1,11 @@
+task,sprint,grading_points,proposed_sp,title,reason,original_status,estimate_status,proposed_on
+1,1,1,2,Khởi tạo dự án và cấu trúc,"Khởi tạo Next.js/NestJS; chuẩn bị Git, README và môi trường.",Xong,proposed,2026-10-27
+2,1,1,2,API danh sách sản phẩm,"API đọc danh sách và dữ liệu mẫu; dùng làm hạng mục tham chiếu 2 SP.",Xong,proposed,2026-10-27
+3,1,1,3,Trang Menu,"Tích hợp API vào giao diện; xử lý tải dữ liệu, rỗng và lỗi.",Xong,proposed,2026-10-27
+4,1,1,5,Chi tiết và tùy chọn sản phẩm,"Chọn size/topping và cập nhật giá; phối hợp dữ liệu với giỏ hàng.",Xong,proposed,2026-10-27
+5,2,1,5,Giỏ hàng,"Thêm/sửa/xóa, gộp dòng, lưu state bền vững, tổng tiền và badge số lượng.",Xong,proposed,2026-10-27
+6,2,1,5,API tạo đơn hàng,"Validate giỏ hàng và tạo đơn PENDING; lưu đơn cùng các dòng chi tiết.",Xong,proposed,2026-10-27
+7,2,1,5,Đăng ký / Đăng nhập JWT,"Băm mật khẩu, phát token, guard bảo vệ API và tích hợp giao diện xác thực.",Xong,proposed,2026-10-27
+8,3,1,5,Thanh toán không tiền mặt,"Tích hợp mock payment Ví/Thẻ; xử lý thành công, lỗi và trạng thái đơn.",Xong,proposed,2026-10-27
+9,3,1,8,"Xác nhận, lịch sử đơn và bàn giao","Hai màn hình đơn hàng; tích hợp Docker Compose, migration/seed, README và demo end-to-end.",Xong,proposed,2026-10-27
+10,3,1,13,Nghiệp vụ backend nâng cao,"State machine, idempotency, tồn kho đồng thời, khuyến mãi/điểm thưởng và kiểm thử tương ứng.",Xong,proposed,2026-10-27

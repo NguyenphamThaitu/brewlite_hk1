@@ -70,31 +70,80 @@ export default function CheckoutPage() {
         }
     }
 
+    const option = (active: boolean) =>
+        `flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition ${
+            active
+                ? 'border-[#0f3a52] bg-[#0f3a52]/5'
+                : 'border-gray-200 hover:border-[#c4956a]'
+        }`;
+
     return (
-        <div className="max-w-sm space-y-3">
-            <h1 className="text-xl font-bold">Thanh toán</h1>
-            <div>Tạm tính: {vnd(cartTotal(items))}</div>
-            <input
-                className="w-full rounded border p-2"
-                placeholder="Mã khuyến mãi (vd: BREW10)"
-                value={promo}
-                onChange={(e) => setPromo(e.target.value)}
-                disabled={!!orderId}
-            />
-            <label className="block">
-                <input type="radio" checked={method === 'WALLET'} onChange={() => setMethod('WALLET')} /> Ví điện tử
-            </label>
-            <label className="block">
-                <input type="radio" checked={method === 'CARD'} onChange={() => setMethod('CARD')} /> Thẻ ngân hàng
-            </label>
-            <p className="text-sm text-gray-500">Không dùng tiền mặt</p>
-            <label className="block text-sm">
-                <input type="checkbox" checked={fail} onChange={(e) => setFail(e.target.checked)} /> (Demo) Giả lập thanh toán lỗi
-            </label>
-            {error && <p className="text-red-600">{error}</p>}
-            <button disabled={loading} onClick={submit} className="rounded bg-[#c4956a] hover:bg-[#a97b52] px-4 py-2 text-white">
-                {loading ? 'Đang xử lý...' : 'Xác nhận trả'}
-            </button>
+        <div className="mx-auto max-w-md">
+            <h1 className="mb-4 border-b border-gray-300 pb-3 text-center text-2xl font-semibold uppercase tracking-wide text-[#0f3a52]">
+                Thanh toán
+            </h1>
+
+            <div className="mb-4 flex items-center justify-between rounded-lg bg-[#0f3a52] p-4 text-white">
+                <span className="font-semibold uppercase tracking-wide">Tạm tính</span>
+                <span className="text-xl font-bold text-[#e0b58c]">{vnd(cartTotal(items))}</span>
+            </div>
+
+            <div className="space-y-3">
+                <input
+                    className="w-full rounded border border-gray-300 p-2 outline-none focus:border-[#c4956a] focus:ring-1 focus:ring-[#c4956a]"
+                    placeholder="Mã khuyến mãi (vd: BREW10)"
+                    value={promo}
+                    onChange={(e) => setPromo(e.target.value)}
+                    disabled={!!orderId}
+                />
+
+                <div className="space-y-2">
+                    <label className={option(method === 'WALLET')}>
+                        <input
+                            type="radio"
+                            className="accent-[#0f3a52]"
+                            checked={method === 'WALLET'}
+                            onChange={() => setMethod('WALLET')}
+                        />
+                        <span className="font-semibold text-[#0f3a52]">Ví điện tử</span>
+                    </label>
+                    <label className={option(method === 'CARD')}>
+                        <input
+                            type="radio"
+                            className="accent-[#0f3a52]"
+                            checked={method === 'CARD'}
+                            onChange={() => setMethod('CARD')}
+                        />
+                        <span className="font-semibold text-[#0f3a52]">Thẻ ngân hàng</span>
+                    </label>
+                </div>
+
+                <p className="text-sm text-gray-500">Không dùng tiền mặt</p>
+
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+                    <input
+                        type="checkbox"
+                        className="accent-[#0f3a52]"
+                        checked={fail}
+                        onChange={(e) => setFail(e.target.checked)}
+                    />
+                    (Demo) Giả lập thanh toán lỗi
+                </label>
+
+                {error && (
+                    <p className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-600">
+                        {error}
+                    </p>
+                )}
+
+                <button
+                    disabled={loading}
+                    onClick={submit}
+                    className="w-full rounded bg-[#c4956a] px-4 py-2.5 font-semibold text-white hover:bg-[#a97b52] disabled:opacity-60"
+                >
+                    {loading ? 'Đang xử lý...' : 'Xác nhận trả'}
+                </button>
+            </div>
         </div>
     );
 }

@@ -42,7 +42,11 @@ export default function ProductDetail() {
                     <button
                         key={s}
                         onClick={() => setSize(s)}
-                        className={`rounded border px-4 py-1 ${size === s ? 'bg-black text-white' : ''}`}
+                        className={`rounded border px-5 py-1.5 font-semibold transition ${
+                            size === s
+                                ? 'border-[#0f3a52] bg-[#0f3a52] text-white'
+                                : 'border-[#0f3a52] text-[#0f3a52] hover:border-[#c4956a] hover:bg-[#c4956a] hover:text-white'
+                        }`}
                     >
                         {s}
                     </button>
@@ -50,8 +54,16 @@ export default function ProductDetail() {
             </div>
             <div className="flex gap-4">
                 {Object.keys(TOPPING_PRICE).map((t) => (
-                    <label key={t}>
-                        <input type="checkbox" checked={toppings.includes(t)} onChange={() => toggle(t)} /> {t}
+                    <label key={t} className="flex cursor-pointer items-center gap-2">
+                        <input
+                            type="checkbox"
+                            className="accent-[#0f3a52]"
+                            checked={toppings.includes(t)}
+                            onChange={() => toggle(t)}
+                        />
+                        <span>
+              {t} (+{vnd(TOPPING_PRICE[t])})
+            </span>
                     </label>
                 ))}
             </div>

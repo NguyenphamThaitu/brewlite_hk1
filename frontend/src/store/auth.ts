@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type User = { id: number; email: string; loyaltyPoints: number };
+export type User = {
+    id: number;
+    email: string;
+    loyaltyPoints: number;
+    role?: 'CUSTOMER' | 'ADMIN';
+};
 
 type State = {
     token: string | null;

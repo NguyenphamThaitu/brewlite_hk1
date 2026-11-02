@@ -1,6 +1,6 @@
 # BrewLite — Cashless Coffee Ordering System
 
-Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ án môn **Công nghệ Phần mềm** — Trường Đại học Sài Gòn (SGU), phát triển theo quy trình **Agile Scrum**.
+Hệ thống đặt cà phê và thanh toán không dùng tiền mặt, tích hợp **Quản lý Định lượng & Tồn kho Nguyên liệu (Ingredient Inventory Management)**. Đồ án môn **Công nghệ Phần mềm** — Trường Đại học Sài Gòn (SGU), phát triển theo quy trình **Agile Scrum**.
 
 ---
 
@@ -13,136 +13,183 @@ Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ á
 | Đặng Tuấn Vỹ | 3124410412 | Product Owner |
 | La Hữu Mẫn | 3122410235 | Tester |
 | Quách Anh Vũ | 3124410410 | Tester, Reviewer |
-| Trần Minh Trí | 3124410371 | Tài liệu, Demo |
+| Trần Minh Trí | 3124410371 | Quản lý kho, Tài liệu, Demo |
 
 ---
 
 ## 🛠 Công nghệ sử dụng
 
 - **Frontend:** Next.js 16 (App Router, React 19, TypeScript), TailwindCSS v4, TanStack React Query v5, Zustand.
-- **Backend:** NestJS 12, TypeScript, Prisma ORM 6, Passport JWT, class-validator.
-- **Database:** PostgreSQL 16.
-- **Thanh toán:** Mock Gateway (Ví điện tử & Thẻ ngân hàng), cơ chế chống trùng lặp **Idempotency-Key**.
+- **Backend:** NestJS 12, TypeScript, Prisma ORM 6, Passport JWT, class-validator, oxlint.
+- **Database:** PostgreSQL 16 (PostgreSQL Numeric / Decimal, khóa chống deadlock `SELECT ... FOR UPDATE`, ràng buộc `CHECK` toàn vẹn dữ liệu).
+- **Thanh toán:** Mock Gateway (Ví điện tử & Thẻ ngân hàng), cơ chế chống trùng lặp **Idempotency-Key**, xử lý giữ chỗ nguyên liệu theo vòng đời thanh toán.
 - **Container & DevOps:** Docker, Docker Compose.
-- **Testing:** Vitest (Frontend unit tests), Jest & Supertest (Backend unit & E2E tests).
+- **Testing:** Vitest (Frontend unit tests), Jest & Supertest (Backend unit & E2E integration tests).
 
 ---
 
 ## ✨ Các chức năng chính (Features)
 
-- **Xem Menu & Tìm kiếm:** Hiển thị danh mục món từ API (`GET /products`), lọc tìm kiếm tức thì phía client hỗ trợ chuẩn hóa tiếng Việt (bỏ dấu), kiểm soát tồn kho (`stock <= 0` hiển thị hết hàng).
-- **Chi tiết món & Tùy biến:** Tùy chọn size (S: +0đ, M: +5.000đ, L: +10.000đ) và topping (Trân châu: +5.000đ, Kem: +5.000đ); đồng bộ công thức tính giá giữa frontend và backend.
-- **Giỏ hàng (Shopping Cart):** Quản lý state với Zustand (xử lý hydration an toàn trên SSR); hỗ trợ tăng/giảm số lượng, xóa món, tự động tính tổng tiền và cập nhật badge số lượng trên header.
-- **Xác thực người dùng (Auth):** Đăng ký/Đăng nhập bảo mật với Bcrypt + JWT; bảo vệ các endpoint nghiệp vụ bằng `JwtAuthGuard`; tự động chuyển đổi giao diện theo trạng thái đăng nhập.
-- **Thanh toán không tiền mặt:** Hỗ trợ thanh toán qua Ví điện tử hoặc Thẻ ngân hàng; áp dụng mã giảm giá (`BREW10` giảm 10%); cơ chế **Idempotency-Key** (UUID) chống lặp giao dịch; hỗ trợ giả lập lỗi thanh toán (giữ nguyên giỏ hàng để thử lại); tự động cộng điểm thưởng (1 điểm / 10.000đ).
-- **Theo dõi & Lịch sử đơn hàng:** Trang xác nhận đơn (`/confirmation/[orderId]`); lịch sử đơn của tôi (`/orders`); quản lý vòng đời đơn hàng qua Order State Machine (`PENDING` ➔ `PAID` / `PAYMENT_FAILED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED`).
-- **Giao diện & Điều hướng:** Trang lỗi 404 tùy biến (`not-found.tsx`) hỗ trợ quay lại trang chủ; Header và Footer đồng bộ thương hiệu và liên kết điều hướng.
+### 1. Phía Khách hàng (Customer Experience)
+- **Xem Menu & Tìm kiếm:** Danh mục đồ uống từ API (`GET /products`), tìm kiếm tức thì phía client hỗ trợ chuẩn hóa tiếng Việt không dấu.
+- **Chi tiết món & Tùy biến:** Chọn size (S/M/L) và topping (Trân châu, Kem); **kiểm tra thời gian thực khả năng pha chế dựa trên tồn kho nguyên liệu thực tế** (cảnh báo hết nguyên liệu theo từng size/topping cụ thể; ước tính số ly độc lập).
+- **Giỏ hàng (Cart):** Quản lý trạng thái bằng Zustand (xử lý hydration SSR), tăng/giảm số lượng, tính tổng tiền và huy hiệu số lượng trên header.
+- **Xác thực người dùng:** Đăng ký / Đăng nhập với Bcrypt + JWT; mặc định phân quyền khách hàng (`role: CUSTOMER`).
+- **Thanh toán không tiền mặt:** Hỗ trợ Ví điện tử / Thẻ ngân hàng; mã giảm giá (`BREW10`); cơ chế **Idempotency-Key** chống giao dịch trùng; xử lý thử lại thông minh (tái sử dụng đơn hàng cũ và key khi lỗi mạng, cấp key mới khi tạo lượt thanh toán mới); tự động cộng điểm thưởng (1 điểm / 10.000đ).
+- **Theo dõi & Hủy đơn hàng:** Quản lý vòng đời đơn (`PENDING` ➔ `PAID` / `PAYMENT_FAILED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED`). Hỗ trợ hủy đơn hợp lệ khi chưa pha chế (`POST /orders/:id/cancel`), tự động giải phóng giữ chỗ nguyên liệu.
+
+### 2. Phía Quản lý (Ingredient Inventory & Management)
+- **Kho nguyên liệu & Cảnh báo sắp hết:** Quản lý số dư tồn thực tế (`stock`), số lượng giữ chỗ (`reservedQty`), tồn khả dụng (`availableQty = stock - reservedQty`), và cảnh báo khi chạm ngưỡng tối thiểu (`lowStockThreshold`).
+- **Nhập kho (Stock-In):** Nhập thêm nguyên liệu, cập nhật số dư tức thì và lưu vết nhật ký biến động kho (`InventoryMovement`).
+- **Kiểm kê & Điều chỉnh số dư (Adjustment):** Cho phép điều chỉnh tồn thực tế sau kiểm kê định kỳ kèm **giải trình lý do bắt buộc**. Ngăn chặn điều chỉnh tồn kho thấp hơn lượng đang giữ chỗ cho đơn chưa thanh toán.
+- **Quản lý & Chỉnh sửa công thức định lượng (Recipes):** Xem và cập nhật trực tiếp định lượng thành phần cho từng sản phẩm theo từng kích cỡ (Size S/M/L) và từng loại topping thông qua giao diện modal tiện lợi, có xác thực dữ liệu và đồng bộ tức thì vào hệ thống.
+- **Báo cáo cân đối xuất-nhập-tồn hàng ngày (Daily Report):** Tổng hợp theo ngày chuẩn múi giờ `Asia/Ho_Chi_Minh` (UTC+7): Tồn đầu ngày (kế thừa tồn khả dụng cuối ngày hôm trước), Nhập trong ngày, Xuất tiêu hao pha chế, Điều chỉnh kiểm kê, Tồn cuối ngày, Đang giữ chỗ và Khả dụng hiện tại.
 
 ---
 
-## 🚀 Hướng dẫn chạy dự án
+## 📦 Kiến trúc & Thiết kế Quản lý Nguyên liệu (Inventory Design)
+
+### 1. Đơn vị cơ sở (Base Units)
+Hệ thống sử dụng các đơn vị đo lường cơ sở không thể chia nhỏ nhằm tránh sai số làm tròn số học:
+- **`g` (Gram):** Cà phê hạt/bột, Sữa đặc, Cốt trà đào, Trân châu đen.
+- **`ml` (Mililít):** Sữa tươi thanh trùng, Siro đào, Đường nước, Kem béo.
+- **`pcs` (Cái/Chiếc):** Ly giấy kèm nắp (nguyên liệu dùng chung cho tất cả các loại đồ uống).
+
+*Lưu ý:* Lưu trữ trong PostgreSQL dưới dạng trường số học chính xác cao `DECIMAL(12, 2)`.
+
+### 2. Vòng đời Giữ chỗ & Tiêu hao (Reservation Lifecycle)
+Hệ thống chọn **nguyên liệu làm nguồn tồn kho có thẩm quyền duy nhất (Authoritative Source)**:
+- **`PENDING` (Tạo đơn):** Khóa dòng các nguyên liệu cần thiết bằng `SELECT ... FOR UPDATE` sắp xếp tăng dần theo ID (ngăn ngừa deadlock và race condition tuyệt đối). Tăng số lượng giữ chỗ `reservedQty`. Tạo snapshot giữ chỗ bất biến trong bảng `OrderIngredientReservation` với trạng thái `RESERVED`. Hạn giữ chỗ mặc định là **10 phút** (`reservationExpiresAt`).
+- **`PAID` (Thanh toán thành công):** Tiêu hao giữ chỗ chính xác 1 lần: giảm đồng thời `stock` và `reservedQty`, chuyển trạng thái reservation sang `CONSUMED`, tạo bản ghi nhật ký biến động kho `InventoryMovement` loại `CONSUMPTION`.
+- **`PAYMENT_FAILED` (Thanh toán lỗi):** Giữ nguyên trạng thái `RESERVED` trong thời hạn 10 phút để khách hàng có thể thử lại thanh toán cho chính đơn hàng đó.
+- **`CANCELLED` hoặc Hết hạn (Expiration):** Giải phóng giữ chỗ: giảm `reservedQty`, chuyển reservation sang `RELEASED`. Nếu đơn đã thanh toán bị hủy trước khi pha chế, phục hồi lại `stock` thực tế và ghi nhận `STOCK_IN`.
+- **Dọn dẹp tự động:** Dịch vụ kiểm tra và dọn dẹp các đơn quá hạn 10 phút tự động kích hoạt định kỳ và ngay khi khởi động lại backend.
+
+### 3. Nguyên tắc Báo cáo ngày (Reporting Rules)
+- Múi giờ chuẩn: `Asia/Ho_Chi_Minh` (UTC+7), ranh giới ngày từ `00:00:00` đến `23:59:59.999`.
+- **Công thức cân đối toán học:**
+  $$\text{Tồn cuối ngày} = \text{Tồn đầu ngày} + \text{Nhập trong ngày} - \text{Xuất tiêu hao pha chế} + \text{Điều chỉnh kiểm kê}$$
+- **Quy tắc quan trọng:** Thao tác giữ chỗ (`RESERVED`) và giải phóng giữ chỗ (`RELEASED`) không được tính là tiêu hao vật lý. Chỉ các đơn hàng thanh toán thành công (`PAID`) mới sinh biến động xuất kho `CONSUMPTION`.
+
+### 4. Xử lý tồn kho cũ (Legacy Product.stock Handling)
+- Giá trị tồn kho cũ `Product.stock` không thể quy đổi ngược thành định lượng từng nguyên liệu pha chế.
+- Toàn bộ nghiệp vụ kiểm tra bán hàng, tạo đơn và dự báo đều sử dụng số dư nguyên liệu thực tế từ bảng `Ingredient`. Trường `Product.stock` được giữ lại ở mức tương thích cơ bản và không được trừ song song để tránh sai lệch dữ liệu.
+
+---
+
+## 🚀 Hướng dẫn khởi chạy & Cài đặt
 
 ### Yêu cầu tiên quyết
-- Node.js LTS (>= 22.12.0)
-- Docker & Docker Desktop
+- Node.js LTS (>= 20.x hoặc >= 22.x)
+- PostgreSQL 16 (hoặc Docker / Docker Desktop)
 - Git
-
-### Cách 1: Khởi chạy bằng Docker (Khuyến nghị để chấm bài)
-
-```bash
-docker compose up --build
-```
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:3001
-- **Database:** `localhost:5432` (PostgreSQL)
-
-*(Backend container tự động chạy migrate database và nạp dữ liệu mẫu ban đầu. Dừng hệ thống bằng `Ctrl+C` hoặc `docker compose down`)*.
 
 ---
 
-### Cách 2: Chạy môi trường Local Development
+### Khởi chạy Môi trường Local Development
 
-**1. Khởi động PostgreSQL qua Docker:**
-```bash
-docker compose up -d db
+**1. Cấu hình cơ sở dữ liệu PostgreSQL:**
+Đảm bảo PostgreSQL đang chạy trên cổng `5432` với tài khoản `brew:brew` và database `brewlite` (hoặc cấu hình lại URL trong `.env`):
+```env
+DATABASE_URL=postgresql://brew:brew@localhost:5432/brewlite
+JWT_SECRET=change-me
+CORS_ORIGIN=http://localhost:3000
+PORT=3001
 ```
 
 **2. Khởi chạy Backend (NestJS):**
 ```bash
 cd backend
-cp .env.example .env
 npm install
 npx prisma generate
-npx prisma migrate dev       # Hoặc: npx prisma db push
-npx prisma db seed          # Nạp dữ liệu menu và mã giảm giá
-npm run start:dev
+npx prisma migrate deploy       # Triển khai các bản migration bảo toàn dữ liệu
+npx ts-node prisma/seed.ts      # Khởi tạo sản phẩm, nguyên liệu, công thức & tài khoản Admin
+npm run build                   # Biên dịch kiểm tra TypeScript
+npm run start:dev               # Khởi động máy chủ backend tại cổng 3001
 ```
 
-**3. Khởi chạy Frontend (Next.js - terminal mới):**
+**3. Khởi chạy Frontend (Next.js):**
 ```bash
 cd frontend
-cp .env.example .env.local
 npm install
-npm run dev
+npm run dev                     # Khởi động giao diện Next.js tại cổng 3000
 ```
 
 ---
 
-## ⚙️ Biến môi trường
+## 🔑 Tài khoản Quản trị viên mẫu (Admin Demo)
 
-| Biến | Vị trí | Giá trị mẫu | Ý nghĩa |
-|---|---|---|---|
-| `DATABASE_URL` | backend | `postgresql://brew:brew@localhost:5432/brewlite` | Kết nối PostgreSQL |
-| `JWT_SECRET` | backend | `change-me` | Secret key ký JWT |
-| `CORS_ORIGIN` | backend | `http://localhost:3000` | Cấp phép CORS cho frontend |
-| `PORT` | backend | `3001` | Cổng chạy Backend API |
-| `NEXT_PUBLIC_API_URL` | frontend | `http://localhost:3001` | URL Backend API |
+Hệ thống tự động khởi tạo sẵn tài khoản quản trị khi chạy lệnh `seed`:
+- **Email:** `admin@brewlite.vn`
+- **Mật khẩu:** `admin123`
+- **Vai trò:** `ADMIN` (Được cấp quyền truy cập toàn bộ menu **Quản lý kho** `/admin/inventory`).
 
----
-
-## 📡 Danh sách API Endpoints
-
-| Method | Endpoint | Auth | Mô tả |
-|---|---|:---:|---|
-| `GET` | `/products` | Không | Danh sách sản phẩm menu |
-| `GET` | `/products/:id` | Không | Chi tiết sản phẩm |
-| `POST` | `/auth/register` | Không | Đăng ký tài khoản mới |
-| `POST` | `/auth/login` | Không | Đăng nhập và nhận JWT token |
-| `POST` | `/orders` | Bearer JWT | Tạo đơn hàng mới (`PENDING`) |
-| `POST` | `/payments` | Bearer JWT | Thanh toán đơn hàng (Header `Idempotency-Key`) |
-| `GET` | `/orders/me` | Bearer JWT | Lịch sử đơn hàng của người dùng |
+*Lưu ý bảo mật:* Đăng ký tài khoản công khai tại `/register` sẽ luôn gán vai trò `CUSTOMER` và bị từ chối truy cập (HTTP 403 Forbidden) vào các endpoint quản lý kho.
 
 ---
 
-## 🎁 Dữ liệu demo & Giá quy ước
+## 🧪 Kiểm thử tự động (Automated Verification)
 
-- **Menu mẫu (Seed tự động):** Cà phê sữa (35.000đ), Americano (40.000đ), Cappuccino (45.000đ), Trà đào (39.000đ).
-- **Quy chuẩn giá:** Size S (+0đ), M (+5.000đ), L (+10.000đ). Topping Trân châu (+5.000đ), Kem (+5.000đ).
-- **Mã khuyến mãi:** `BREW10` (giảm 10% tổng hóa đơn).
-- **Tài khoản:** Đăng ký tự do tại `/register`.
-
----
-
-## 🧪 Kiểm thử tự động (Testing)
-
-### Frontend (Vitest)
-Kiểm tra logic hàm định dạng tiền `vnd()` và hàm tính tổng số lượng món `cartCount()`:
-```bash
-cd frontend
-npm test            # Chạy kiểm thử một lần
-npm run test:watch  # Chạy theo dõi tự động
-```
-
-### Backend (Jest & Supertest)
-Kiểm tra Order State Machine và tích hợp toàn bộ luồng nghiệp vụ API:
+### Chạy Unit Tests & E2E Tests Backend:
 ```bash
 cd backend
-npm test            # Unit tests
-npm run test:e2e    # E2E integration tests (yêu cầu Docker DB đang chạy)
+
+# Chạy Unit Tests
+npm test
+
+# Chạy E2E Tests (bao gồm kiểm thử toàn diện 20 ca kiểm thử cho kho, dự báo 500 ly, đồng thời, và đối soát)
+npm run test:e2e
+
+# Chạy linter
+npm run lint
+```
+
+### Chạy Unit Tests & Lint Frontend:
+```bash
+cd frontend
+npm test
+npm run lint
+npm run build
 ```
 
 ---
 
-## 📌 Ghi chú phát triển
-- Code Task 4 (chi tiết & pricing) được commit chung với Task 5 (giỏ hàng).
-- Quy trình kiểm thử, Definition of Done và biên bản Agile Scrum được lưu chi tiết trong thư mục `docs/`.
+## 📋 Kịch bản Demo: "500 ly Cà phê sữa M + 500 ly Trà đào M"
+
+Để chứng minh đầy đủ yêu cầu nghiệp vụ chính của đề bài:
+
+1. Đăng nhập vào hệ thống bằng tài khoản Admin:
+   - Truy cập http://localhost:3000/login
+   - Nhập `admin@brewlite.vn` / `admin123`
+2. Bấm vào nút **Quản lý kho** màu vàng cam trên thanh Header (hoặc mở trực tiếp http://localhost:3000/admin/inventory).
+3. Chọn tab **"Dự báo cơ cấu bán hàng (500+ ly)"**.
+4. Bấm vào nút kịch bản nhanh: **"★ 500 ly Cà phê sữa M + 500 ly Trà đào M"** (hoặc tự chọn món, chọn Size M và nhập số lượng 500 vào 2 dòng sản phẩm).
+5. Bấm nút **"Tính toán dự báo nguyên liệu"**.
+6. **Quan sát kết quả tính toán:**
+   - `Cà phê hạt / bột`: $500 \times 25\text{g} = 12.500\text{g}$.
+   - `Sữa đặc`: $500 \times 40\text{g} = 20.000\text{g}$.
+   - `Cốt trà đào`: $500 \times 15\text{g} = 7.500\text{g}$.
+   - `Siro đào`: $500 \times 35\text{ml} = 17.500\text{ml}$.
+   - `Đường nước`: $500 \times 20\text{ml} = 10.000\text{ml}$.
+   - `Ly giấy kèm nắp` (Nguyên liệu dùng chung gộp lại): $(500 + 500) \times 1 = 1.000\text{ pcs}$.
+   - Bảng hiển thị đầy đủ các cột: **Cần dùng**, **Tồn thực tế**, **Đang giữ chỗ**, **Khả dụng**, **Thiếu hụt**, **Dự kiến còn lại**, và nhãn đánh giá tính khả thi tổng thể.
+7. **Thử nghiệm kịch bản thiếu hụt:**
+   - Chọn kịch bản "Thiếu hụt (1.500 ly cỡ L)" hoặc tăng số lượng ly lên 2.000 ly. Bấm tính toán và thấy hệ thống báo đỏ: *"Kế hoạch KHÔNG THỂ đáp ứng toàn bộ (Thiếu hụt nguyên liệu)"*, nêu rõ định lượng thiếu hụt từng thành phần.
+   - Bấm nút **+ Nhập kho**, chọn nguyên liệu thiếu và nhập bù thêm số lượng, sau đó bấm tính lại để thấy kế hoạch chuyển sang trạng thái khả thi.
+
+---
+
+## 📡 Danh sách API Endpoints Bổ sung
+
+| Method | Endpoint | Quyền | Mô tả |
+|---|---|:---:|---|
+| `POST` | `/inventory/forecast` | Admin | Dự báo nhu cầu nguyên liệu theo cơ cấu bán hàng (500+ ly) |
+| `GET` | `/inventory/ingredients` | Admin | Danh sách số dư nguyên liệu, giữ chỗ và cảnh báo sắp hết |
+| `POST` | `/inventory/stock-in` | Admin | Nhập kho nguyên liệu mới |
+| `POST` | `/inventory/adjust` | Admin | Điều chỉnh số dư kiểm kê kèm giải trình bắt buộc |
+| `GET` | `/inventory/recipes` | Admin | Xem công thức định lượng đồ uống và topping |
+| `PUT` | `/inventory/recipes/product` | Admin | Cập nhật định lượng món theo size |
+| `PUT` | `/inventory/recipes/topping` | Admin | Cập nhật định lượng topping |
+| `GET` | `/inventory/reports/daily` | Admin | Báo cáo cân đối xuất-nhập-tồn hàng ngày (múi giờ UTC+7) |
+| `GET` | `/inventory/product-availability/:id` | Public | Kiểm tra nguyên liệu và ước tính số ly độc lập cho biến thể |
+| `POST` | `/orders/:id/cancel` | Khách / Admin | Hủy đơn hàng hợp lệ và tự động giải phóng giữ chỗ nguyên liệu |

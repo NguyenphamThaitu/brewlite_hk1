@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,14 +10,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { assertTransition } from '../orders/order-state';
 import { MockGateway } from './mock-gateway';
 import { PayDto } from './pay.dto';
+import { InventoryService } from '../inventory/inventory.service';
 
-type PaymentWithOrder = Payment & { order: { status: OrderStatus } };
+type PaymentWithOrder = Payment & { order: { status: OrderStatus; userId: number } };
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private prisma: PrismaService,
     private gateway: MockGateway,
+    private inventoryService: InventoryService,
   ) {}
 
   private toResult(p: PaymentWithOrder) {
@@ -27,23 +31,50 @@ export class PaymentsService {
   }
 
   async pay(userId: number, key: string, dto: PayDto) {
-    // 1) Cùng Idempotency-Key: trả lại kết quả cũ, KHÔNG xử lý lại
+    // 1) Cùng Idempotency-Key: kiểm tra quyền sở hữu đơn và trả lại kết quả cũ, KHÔNG xử lý lại
     const existing = await this.prisma.payment.findUnique({
       where: { idempotencyKey: key },
       include: { order: true },
     });
     if (existing) {
-      if (existing.orderId !== dto.orderId)
+      if (existing.order.userId !== userId) {
+        throw new ForbiddenException('Bạn không có quyền truy cập kết quả thanh toán này');
+      }
+      if (existing.orderId !== dto.orderId) {
         throw new ConflictException('Idempotency-Key này đã dùng cho đơn khác');
+      }
       return this.toResult(existing);
     }
 
-    const order = await this.prisma.order.findFirst({
-      where: { id: dto.orderId, userId },
+    const order = await this.prisma.order.findUnique({
+      where: { id: dto.orderId },
+      include: { reservations: true },
     });
     if (!order) throw new NotFoundException('Không tìm thấy đơn hàng');
 
-    // 2) State machine: PAYMENT_FAILED -> PENDING là "thử lại"
+    if (order.userId !== userId) {
+      throw new ForbiddenException('Bạn không có quyền thanh toán đơn hàng này');
+    }
+
+    // Kiểm tra đơn đã bị hủy
+    if (order.status === OrderStatus.CANCELLED) {
+      throw new BadRequestException('Đơn hàng đã bị hủy, không thể thực hiện thanh toán');
+    }
+
+    // Kiểm tra đơn đã thanh toán thành công từ trước
+    if (order.status === OrderStatus.PAID) {
+      throw new BadRequestException('Đơn hàng đã được thanh toán thành công');
+    }
+
+    // Kiểm tra thời hạn giữ chỗ nguyên liệu (10 phút)
+    if (order.reservationExpiresAt && order.reservationExpiresAt < new Date()) {
+      await this.inventoryService.expireOrderReservation(order.id);
+      throw new BadRequestException(
+        'Đơn hàng đã hết hạn giữ chỗ (10 phút) và đã tự động bị hủy. Vui lòng tạo đơn mới.',
+      );
+    }
+
+    // 2) State machine: PAYMENT_FAILED -> PENDING là "thử lại thanh toán"
     let from = order.status;
     if (from === OrderStatus.PAYMENT_FAILED) {
       assertTransition(from, OrderStatus.PENDING);
@@ -56,7 +87,7 @@ export class PaymentsService {
       dto.simulateFail,
     );
     const target = ok ? OrderStatus.PAID : OrderStatus.PAYMENT_FAILED;
-    assertTransition(from, target); // đơn đã PAID mà trả lại => 400
+    assertTransition(from, target);
 
     try {
       return await this.prisma.$transaction(async (tx) => {
@@ -69,15 +100,21 @@ export class PaymentsService {
             status: ok ? PaymentStatus.SUCCESS : PaymentStatus.FAILED,
           },
         });
-        // chỉ cập nhật nếu trạng thái chưa bị yêu cầu khác đổi
+
+        // Chỉ cập nhật nếu trạng thái chưa bị yêu cầu khác đổi
         const upd = await tx.order.updateMany({
           where: { id: order.id, status: order.status },
           data: { status: target },
         });
-        if (upd.count === 0)
+        if (upd.count === 0) {
           throw new ConflictException('Đơn đã được xử lý bởi yêu cầu khác');
+        }
+
         if (ok) {
-          // Điểm thưởng [Giả định]: 1 điểm / 10.000đ, cộng 1 lần khi PAID
+          // Tiêu hao nguyên liệu đã giữ chỗ chính xác 1 lần
+          await this.inventoryService.consumeOrderReservationsTx(tx, order.id);
+
+          // Điểm thưởng: 1 điểm / 10.000đ, cộng 1 lần khi thanh toán thành công
           await tx.user.update({
             where: { id: userId },
             data: {
@@ -85,6 +122,7 @@ export class PaymentsService {
             },
           });
         }
+
         return {
           orderId: order.id,
           orderStatus: target,
@@ -93,7 +131,7 @@ export class PaymentsService {
       });
     } catch (e) {
       // 2 request cùng key chạy song song: request chậm vi phạm unique,
-      // ta trả kết quả của request đầu
+      // ta kiểm tra quyền sở hữu và trả kết quả của request đầu
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === 'P2002'
@@ -102,7 +140,12 @@ export class PaymentsService {
           where: { idempotencyKey: key },
           include: { order: true },
         });
-        if (p) return this.toResult(p);
+        if (p) {
+          if (p.order.userId !== userId) {
+            throw new ForbiddenException('Bạn không có quyền truy cập kết quả thanh toán này');
+          }
+          return this.toResult(p);
+        }
       }
       throw e;
     }

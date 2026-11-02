@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './auth.dto';
 
@@ -21,8 +22,9 @@ export class AuthService {
     });
     if (exists) throw new ConflictException('Email đã được đăng ký');
     const passwordHash = await bcrypt.hash(dto.password, 10);
+    // Public registration always assigns CUSTOMER role
     const user = await this.prisma.user.create({
-      data: { email: dto.email, passwordHash },
+      data: { email: dto.email, passwordHash, role: Role.CUSTOMER },
     });
     return this.sign(user);
   }
@@ -36,10 +38,15 @@ export class AuthService {
     return this.sign(user);
   }
 
-  private sign(u: { id: number; email: string; loyaltyPoints: number }) {
+  private sign(u: { id: number; email: string; loyaltyPoints: number; role: Role }) {
     return {
-      accessToken: this.jwt.sign({ sub: u.id, email: u.email }),
-      user: { id: u.id, email: u.email, loyaltyPoints: u.loyaltyPoints },
+      accessToken: this.jwt.sign({ sub: u.id, email: u.email, role: u.role }),
+      user: {
+        id: u.id,
+        email: u.email,
+        loyaltyPoints: u.loyaltyPoints,
+        role: u.role,
+      },
     };
   }
 }

@@ -18,8 +18,13 @@ export default function CheckoutPage() {
     const [fail, setFail] = useState(false);
     const [orderId, setOrderId] = useState<number | null>(null);
     const [error, setError] = useState('');
+    const [isExpired, setIsExpired] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // keyRef lưu Idempotency-Key của lần thanh toán hiện tại
     const keyRef = useRef<string | null>(null);
+    // networkErrorRef đánh dấu lần thử trước bị lỗi mạng hay không
+    const isNetworkRetryRef = useRef<boolean>(false);
 
     if (!hydrated) return null;
     if (!token) {
@@ -31,8 +36,12 @@ export default function CheckoutPage() {
     async function submit() {
         setLoading(true);
         setError('');
+        setIsExpired(false);
+
         try {
             let id = orderId;
+
+            // 1. Nếu chưa có đơn (hoặc đơn trước đã hết hạn và bị reset), tạo đơn mới
             if (!id) {
                 const o = await api<{ id: number }>('/orders', {
                     method: 'POST',
@@ -50,21 +59,48 @@ export default function CheckoutPage() {
                 id = o.id;
                 setOrderId(id);
             }
-            keyRef.current = crypto.randomUUID();
+
+            // 2. Xử lý Idempotency-Key:
+            // - Nếu lần trước bị lỗi mạng/timeout (kết quả chưa xác định): tái sử dụng keyRef.current
+            // - Nếu là lần thanh toán mới (hoặc thanh toán lại sau khi cổng báo PAYMENT_FAILED): tạo UUID mới
+            if (!isNetworkRetryRef.current || !keyRef.current) {
+                keyRef.current = crypto.randomUUID();
+            }
+
             const r = await api<{ orderStatus: string }>('/payments', {
                 method: 'POST',
                 token: token!,
                 idempotencyKey: keyRef.current,
                 body: JSON.stringify({ orderId: id, method, simulateFail: fail }),
             });
+
+            // Giao dịch đã được máy chủ tiếp nhận và phản hồi thành công
+            isNetworkRetryRef.current = false;
+
             if (r.orderStatus === 'PAID') {
                 clear();
                 router.push(`/confirmation/${id}`);
             } else {
-                setError('Thanh toán thất bại. Giỏ hàng được giữ nguyên, bạn có thể thử lại.');
+                // PAYMENT_FAILED: Giữ nguyên orderId để thanh toán lại,
+                // nhưng lần thử tiếp theo sẽ là một payment attempt mới (cần key mới)
+                keyRef.current = null;
+                setError('Thanh toán thất bại. Nguyên liệu giữ chỗ và giỏ hàng được giữ nguyên trong 10 phút, bạn có thể thử lại.');
             }
         } catch (e) {
-            setError((e as Error).message);
+            const msg = (e as Error).message;
+            setError(msg);
+
+            // Kiểm tra lỗi hết hạn giữ chỗ (10 phút)
+            if (msg.includes('hết hạn giữ chỗ') || msg.includes('bị hủy')) {
+                setIsExpired(true);
+                // Reset orderId để lần bấm sau tạo đơn và giữ chỗ lại từ đầu
+                setOrderId(null);
+                keyRef.current = null;
+                isNetworkRetryRef.current = false;
+            } else {
+                // Đánh dấu có thể là lỗi mạng / timeout không chắc chắn
+                isNetworkRetryRef.current = true;
+            }
         } finally {
             setLoading(false);
         }
@@ -87,6 +123,12 @@ export default function CheckoutPage() {
                 <span className="font-semibold uppercase tracking-wide">Tạm tính</span>
                 <span className="text-xl font-bold text-[#e0b58c]">{vnd(cartTotal(items))}</span>
             </div>
+
+            {orderId && (
+                <div className="mb-3 rounded border border-blue-200 bg-blue-50 p-2 text-xs text-blue-800">
+                    Đang xử lý đơn hàng <strong>#{orderId}</strong>. Nguyên liệu đã được giữ chỗ trong 10 phút.
+                </div>
+            )}
 
             <div className="space-y-3">
                 <input
@@ -131,9 +173,14 @@ export default function CheckoutPage() {
                 </label>
 
                 {error && (
-                    <p className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-600">
-                        {error}
-                    </p>
+                    <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-600 space-y-1">
+                        <p className="font-semibold">{error}</p>
+                        {isExpired && (
+                            <p className="text-xs text-red-700">
+                                Đơn giữ chỗ cũ đã hết hạn và tự động giải phóng. Bạn có thể bấm nút bên dưới để tạo lại đơn và giữ chỗ mới.
+                            </p>
+                        )}
+                    </div>
                 )}
 
                 <button
@@ -141,7 +188,13 @@ export default function CheckoutPage() {
                     onClick={submit}
                     className="w-full rounded bg-[#c4956a] px-4 py-2.5 font-semibold text-white hover:bg-[#a97b52] disabled:opacity-60"
                 >
-                    {loading ? 'Đang xử lý...' : 'Xác nhận trả'}
+                    {loading
+                        ? 'Đang xử lý...'
+                        : isExpired
+                        ? 'Tạo lại đơn & Thanh toán'
+                        : orderId
+                        ? 'Thử lại thanh toán'
+                        : 'Xác nhận trả'}
                 </button>
             </div>
         </div>

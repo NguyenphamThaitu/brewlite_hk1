@@ -9,6 +9,10 @@ describe('Task 10 (integration)', () => {
   let prisma: PrismaService;
   let token: string;
   let userId: number;
+  const createdProductIds: number[] = [];
+  const createdIngredientIds: number[] = [];
+  const createdOrderIds: number[] = [];
+
   const http = () => request(app.getHttpServer());
   const auth = () => ({ Authorization: `Bearer ${token}` });
 
@@ -29,12 +33,85 @@ describe('Task 10 (integration)', () => {
     userId = r.body.user.id;
   });
 
-  afterAll(() => app.close());
+  afterAll(async () => {
+    try {
+      if (prisma) {
+        // Dọn dẹp test fixtures kể cả khi assertions thất bại theo đúng thứ tự khóa ngoại
+        await prisma.payment.deleteMany({
+          where: {
+            OR: [
+              ...(createdOrderIds.length > 0 ? [{ orderId: { in: createdOrderIds } }] : []),
+              ...(userId ? [{ order: { userId } }] : []),
+            ],
+          },
+        });
+        await prisma.orderIngredientReservation.deleteMany({
+          where: {
+            OR: [
+              ...(createdOrderIds.length > 0 ? [{ orderId: { in: createdOrderIds } }] : []),
+              { ingredientId: { in: createdIngredientIds } },
+              ...(userId ? [{ order: { userId } }] : []),
+            ],
+          },
+        });
+        await prisma.orderItem.deleteMany({
+          where: {
+            OR: [
+              ...(createdOrderIds.length > 0 ? [{ orderId: { in: createdOrderIds } }] : []),
+              { productId: { in: createdProductIds } },
+              ...(userId ? [{ order: { userId } }] : []),
+            ],
+          },
+        });
+        await prisma.order.deleteMany({
+          where: {
+            OR: [
+              ...(createdOrderIds.length > 0 ? [{ id: { in: createdOrderIds } }] : []),
+              ...(userId ? [{ userId }] : []),
+            ],
+          },
+        });
+        await prisma.recipeItem.deleteMany({
+          where: {
+            OR: [
+              { productId: { in: createdProductIds } },
+              { ingredientId: { in: createdIngredientIds } },
+            ],
+          },
+        });
+        await prisma.product.deleteMany({
+          where: { id: { in: createdProductIds } },
+        });
+        await prisma.inventoryMovement.deleteMany({
+          where: { ingredientId: { in: createdIngredientIds } },
+        });
+        await prisma.ingredient.deleteMany({
+          where: { id: { in: createdIngredientIds } },
+        });
+        if (userId) {
+          await prisma.user.deleteMany({ where: { id: userId } });
+        }
+      }
+    } finally {
+      if (app) await app.close();
+    }
+  });
 
-  it('(c) đặt đồng thời 10 đơn khi tồn kho 5 => đúng 5 đơn thành công', async () => {
-    const p = await prisma.product.create({
-      data: { name: 'Test', price: 10000, imageUrl: 'x', stock: 5 },
+  it('(c) đặt đồng thời 10 đơn khi tồn kho nguyên liệu 5 => đúng 5 đơn thành công', async () => {
+    const ing = await prisma.ingredient.create({
+      data: { name: `Task10_Ing_${Date.now()}`, unit: 'pcs', stock: 5, reservedQty: 0 },
     });
+    createdIngredientIds.push(ing.id);
+
+    const p = await prisma.product.create({
+      data: { name: `Task10_P_${Date.now()}`, price: 10000, imageUrl: 'x', stock: 5 },
+    });
+    createdProductIds.push(p.id);
+
+    await prisma.recipeItem.create({
+      data: { productId: p.id, size: 'S', ingredientId: ing.id, amount: 1 },
+    });
+
     const results = await Promise.all(
       Array.from({ length: 10 }, () =>
         http()
@@ -43,23 +120,37 @@ describe('Task 10 (integration)', () => {
           .send({ items: [{ productId: p.id, size: 'S', qty: 1 }] }),
       ),
     );
+    results.filter((r) => r.status === 201).forEach((r) => createdOrderIds.push(r.body.id));
     expect(results.filter((r) => r.status === 201)).toHaveLength(5);
-    const after = await prisma.product.findUniqueOrThrow({
-      where: { id: p.id },
+    const after = await prisma.ingredient.findUniqueOrThrow({
+      where: { id: ing.id },
     });
-    expect(after.stock).toBe(0);
+    // Tồn khả dụng = stock - reservedQty = 5 - 5 = 0
+    expect(Number(after.stock) - Number(after.reservedQty)).toBe(0);
   });
 
   it('(b) gửi 2 lần cùng Idempotency-Key => chỉ 1 payment, cộng điểm 1 lần', async () => {
-    const p = await prisma.product.create({
-      data: { name: 'Test2', price: 20000, imageUrl: 'x', stock: 10 },
+    const ing = await prisma.ingredient.create({
+      data: { name: `Task10_Ing2_${Date.now()}`, unit: 'pcs', stock: 10, reservedQty: 0 },
     });
+    createdIngredientIds.push(ing.id);
+
+    const p = await prisma.product.create({
+      data: { name: `Task10_P2_${Date.now()}`, price: 20000, imageUrl: 'x', stock: 10 },
+    });
+    createdProductIds.push(p.id);
+
+    await prisma.recipeItem.create({
+      data: { productId: p.id, size: 'S', ingredientId: ing.id, amount: 1 },
+    });
+
     const order = (
       await http()
         .post('/orders')
         .set(auth())
         .send({ items: [{ productId: p.id, size: 'S', qty: 1 }] })
     ).body;
+    createdOrderIds.push(order.id);
     const key = `key-${Date.now()}`;
     const pay = () =>
       http()

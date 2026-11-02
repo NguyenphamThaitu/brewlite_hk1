@@ -81,7 +81,7 @@ Tổng dưới đây dùng bộ ước lượng đề xuất ở mục 2, chưa 
 | La Hữu Mẫn - Tester luồng chính | Hiện nhãn "Hết hàng", khóa nút "Thêm vào giỏ" khi stock = 0; kiểm thử đổi size/topping, giỏ hàng, đăng ký email mới, thanh toán Ví và "Đơn của tôi". Phạm vi nghiệm thu: Task 3, 4, 5, 8, 9. | `frontend/src/app/products/[id]/page.tsx` đã có kiểm tra `stock <= 0`, nhãn hết hàng và khóa/chặn thêm vào giỏ trên `main`. | Bổ sung bảng Đạt/Không đạt cho từng bước đã chạy và ảnh lỗi nếu có. Nội dung đã nhận chưa kèm kết quả kiểm thử từng bước. |
 | Quách Anh Vũ - Tester lỗi, Reviewer | Bổ sung `backend/http/api.http`; kiểm thử đăng ký trùng email, sai mật khẩu, giỏ rỗng, mã sai/BREW10, thanh toán thành công/thất bại, dùng lại Idempotency-Key và thanh toán lại sau lỗi; review/Approve các PR. Phạm vi nghiệm thu: Task 6, 7, 8, 9, 10. | File HTTP đã có các request mẫu và kết quả mong đợi; PR #3 đã merge vào `main`. Chưa có review/Approve được ghi nhận trên GitHub ở PR #1-#4 tại thời điểm đối chiếu. | Bổ sung bảng PASS/FAIL thực tế và ghi nhận review theo phân công. Request mẫu và trạng thái PR đã merge chưa thay thế cho kết quả chạy test hoặc xác nhận review. |
 | Đặng Tuấn Vỹ - Product Owner | Thêm tìm món theo tên trên Menu, lọc phía trình duyệt; nghiệm thu Task 1, 2, 3, 4, 8, 9; viết phản hồi khách hàng và backlog bản sau. | Tìm kiếm đã có trong `frontend/src/app/page.tsx`; PR #4 đã merge. Mục 10 đã có nghiệm thu sơ bộ dựa trên source, phản hồi mô phỏng và backlog. | Xác nhận kết quả chạy thực tế trước khi chốt nghiệm thu; bổ sung phản hồi thực tế sau Review nếu có. Giữ rõ phạm vi đánh giá sơ bộ của mục 10. |
-| Trần Minh Trí - Tài liệu, Demo | Thêm trang 404 tiếng Việt, footer gắn vào layout; cập nhật tên/MSSV và hướng dẫn README theo thay đổi code. | `not-found.tsx`, `footer.tsx` và phần gắn Footer vào `layout.tsx` đã có trên `main`; PR #1 đã merge. README đã có tên/MSSV các thành viên và nội dung chức năng mới. | Rà soát tài liệu khớp bản demo và chuẩn bị phần trình diễn sáng thứ Tư. |
+| Trần Minh Trí - Tài liệu, Demo | Thêm trang 404 tiếng Việt, footer gắn vào layout; cập nhật tên/MSSV và hướng dẫn README theo thay đổi code. Hoàn thành bộ nghiệp vụ quản lý tồn kho nguyên liệu, kiểm soát định lượng thời gian thực, báo cáo cân đối xuất-nhập-tồn, chỉnh sửa công thức, kiểm soát nguyên liệu dùng chung. | `not-found.tsx`, `footer.tsx` và phần gắn Footer vào `layout.tsx` đã có trên `main`; PR #1 đã merge. README đã có tên/MSSV các thành viên và nội dung chức năng mới. |
 
 **Cập nhật phần việc Scrum Master - Quách Văn Trường:** PR #2 đã merge vào `main`, gồm 12 unit test cho `vnd()` và `cartCount()`, hướng dẫn chạy test và ghi nhận buổi họp thứ Hai. Khi tích hợp với thay đổi mới của nhóm, 12 test, lint và build đã chạy thành công. Đã bổ sung bộ SP đề xuất; đang chờ nhóm xác nhận và cung cấp số liệu tiến độ theo ngày để hoàn thiện Burndown thực tế.
 
@@ -209,15 +209,17 @@ Các nội dung dưới đây là phản hồi mô phỏng để chuẩn bị ch
 4. Khi thanh toán thất bại, khách hàng mong muốn có thông báo rõ ràng và hướng dẫn thử lại an toàn.
 5. Khách hàng đề nghị nhóm kiểm thử đầy đủ luồng đặt hàng, thanh toán và bàn giao trước khi đưa sản phẩm vào sử dụng.
 
-### 10.2. Product Backlog cho phiên bản tiếp theo
+### 10.2. Product Backlog và Tiến độ triển khai các tính năng mở rộng
 
-| Ưu tiên | Hạng mục | Mục tiêu |
-|---|---|---|
-| Cao | Lọc menu theo danh mục và khoảng giá | Giúp khách hàng tìm đồ uống nhanh hơn. |
-| Cao | Cải thiện thông báo lỗi và thử lại khi thanh toán thất bại | Giúp khách hiểu trạng thái giao dịch và hạn chế thao tác nhầm. |
-| Trung bình | Lưu món yêu thích và đặt lại từ lịch sử đơn | Rút ngắn thời gian đặt hàng cho khách hàng thường xuyên. |
-| Trung bình | Bổ sung kiểm thử tự động cho tìm kiếm menu và luồng đặt hàng/thanh toán | Phát hiện lỗi sớm khi cập nhật chức năng. |
-| Thấp | Cải thiện khả năng truy cập và giao diện trên thiết bị di động | Giúp ứng dụng dễ sử dụng hơn trên nhiều thiết bị. |
+| Ưu tiên | Hạng mục | Mục tiêu | Trạng thái ghi nhận |
+|---|---|---|---|
+| Đã hoàn thành | Quản lý định lượng & Tồn kho nguyên liệu (Ingredient Inventory) | Mô hình nguyên liệu (g, ml, pcs), công thức theo size S/M/L, công thức topping, giữ chỗ nguyên liệu trong 10 phút, đối soát biến động kho. | Đã hoàn thành (Code, Migration, Seed, Test E2E) |
+| Đã hoàn thành | Dự báo cơ cấu bán hàng (Sales Mix Forecast 500+ ly) | Cho phép người quản lý nhập số ly dự kiến (500+ ly), tự động gộp nguyên liệu dùng chung và xuất bảng phân tích thiếu hụt không làm thay đổi tồn kho. | Đã hoàn thành (API, UI, E2E Test) |
+| Đã hoàn thành | Cải thiện thông báo lỗi và thử lại khi thanh toán thất bại | Tái sử dụng đơn hàng cũ, cơ chế Idempotency-Key chống lặp, xử lý rõ ràng khi hết hạn giữ chỗ và hỗ trợ hủy đơn giải phóng giữ chỗ. | Đã hoàn thành |
+| Đã hoàn thành | Báo cáo cân đối xuất-nhập-tồn hàng ngày | Báo cáo xuất-nhập-tồn theo múi giờ Asia/Ho_Chi_Minh (UTC+7), đối soát toán học chính xác 100%. | Đã hoàn thành |
+| Cao | Lọc menu theo danh mục và khoảng giá | Giúp khách hàng tìm đồ uống nhanh hơn theo sở thích. | Đang chờ phiên bản kế tiếp |
+| Trung bình | Lưu món yêu thích và đặt lại từ lịch sử đơn | Rút ngắn thời gian đặt hàng cho khách hàng thường xuyên. | Đang chờ phiên bản kế tiếp |
+| Thấp | Cải thiện khả năng truy cập và giao diện trên thiết bị di động | Tối ưu hóa nâng cao trải nghiệm người dùng mobile. | Đang chờ phiên bản kế tiếp |
 
 ### 10.3. Ghi chú của Product Owner
 

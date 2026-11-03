@@ -12,11 +12,11 @@
 
 ## 2. Product Backlog
 
-**Trạng thái: 10/10 task đã hoàn thành.** Bảng dưới đây là bộ story points (SP) chính thức nhóm dùng để theo dõi tiến độ và vẽ Burndown.
+Nhóm đã hoàn thành cả 10 task. Mỗi task được ước lượng bằng story points (SP) để theo dõi tiến độ và vẽ Burndown.
 
-"Điểm chấm bài" giữ nguyên 1 điểm/task theo đề. "Story points" đo quy mô công việc tương đối (khối lượng, độ phức tạp, rủi ro). Hai cột có mục đích khác nhau nên không cộng lẫn.
-
-"Ngày hoàn thành" là ngày code của task được đưa lên nhánh `main`. Cột cuối là mã commit để thầy/nhóm kiểm tra lại trên GitHub.
+- **Điểm chấm bài:** 1 điểm/task theo đề.
+- **Story points:** độ lớn tương đối của task (khối lượng, độ khó, rủi ro). Hai cột này dùng cho hai việc khác nhau nên không cộng chung.
+- **Ngày hoàn thành:** ngày code của task được đưa lên nhánh `main`, kèm mã commit để kiểm tra trên GitHub.
 
 <!-- sp-table:start -->
 | # | Task | Sprint | Điểm chấm bài | Story points | Trạng thái | Ngày hoàn thành | Commit minh chứng |
@@ -36,22 +36,27 @@
 
 Ảnh giao diện tham khảo: [img.png](img.png).
 
-### 2.1. Cách xác định story points
+### 2.1. Cách ước lượng story points
 
-1. Đọc tiêu chí chấp nhận của từng task; tính cả lập trình, tích hợp và kiểm thử cần để hoàn thành.
-2. Dùng Task 2 (API đọc danh sách sản phẩm) làm mốc 2 SP. So sánh các task còn lại theo phạm vi, số thành phần liên quan, độ khó và rủi ro; không quy đổi SP cố định sang giờ.
-3. Dùng thang Fibonacci 1, 2, 3, 5, 8, 13. Task 1 ngang mốc (2 SP). Task 3 lớn hơn mốc một chút (3 SP). Các luồng tùy chọn/giỏ hàng/tạo đơn/xác thực/thanh toán cơ bản ở mức 5 SP. Task 9 có phạm vi tích hợp và bàn giao rộng nên 8 SP.
-4. Task 10 được 13 SP vì gộp state machine, idempotency, khóa tồn kho đồng thời, khuyến mãi/điểm thưởng và kiểm thử nghiệp vụ. Task 6 và 8 chỉ tính luồng cơ bản; phần nâng cao tính ở Task 10 để tránh đếm trùng.
-5. Các thành viên cùng xem xét và thống nhất; Scrum Master ghi nhận kết quả, Product Owner làm rõ phạm vi.
+1. Chọn Task 2 (API lấy danh sách sản phẩm) làm mốc **2 SP**, vì đây là task đơn giản, cả nhóm dễ hình dung.
+2. Các task còn lại so với mốc này, dùng thang Fibonacci 1, 2, 3, 5, 8, 13:
+   - Task 1 tương đương mốc nên được 2 SP. Task 3 nhỉnh hơn một chút nên được 3 SP.
+   - Task 4–8 (tùy chọn món, giỏ hàng, tạo đơn, đăng nhập, thanh toán) mỗi task 5 SP.
+   - Task 9 phải ghép nhiều phần (2 màn hình đơn hàng, Docker, README, demo) nên được 8 SP.
+   - Task 10 được 13 SP vì gồm state machine, idempotency, khóa tồn kho, khuyến mãi/điểm thưởng và test. Task 6 và 8 chỉ tính phần cơ bản, phần nâng cao tính vào Task 10 để không bị tính trùng.
+3. Cả nhóm cùng xem và thống nhất. PO giải thích phạm vi từng task, Scrum Master ghi lại kết quả.
 
-Lý do từng ước lượng được lưu cùng dữ liệu trong [story-points.csv](burndown/story-points.csv). Tham khảo phương pháp: [Atlassian - Story points and estimation](https://www.atlassian.com/agile/project-management/estimation) và [Scrum Guide - Product Backlog](https://scrumguides.org/scrum-guide.html#product-backlog).
+Lý do ước lượng của từng task nằm trong [story-points.csv](burndown/story-points.csv).
 
 ## 3. Sprint Backlog và Sprint Goal
-- **Sprint 1** (Task 1-4): Nền tảng và hiển thị menu.
-- **Sprint 2** (Task 5-7): Giỏ hàng, đặt đơn, đăng nhập. Thực tế làm theo thứ tự 5 → 7 → 6 vì Task 6 cần JWT Guard của Task 7.
-- **Sprint 3** (Task 8-10): Thanh toán, bàn giao, nghiệp vụ nâng cao.
 
-Tổng SP theo Sprint (cả 3 Sprint đều đã đạt Sprint Goal):
+| Sprint | Task | Sprint Goal |
+|---|---|---|
+| 1 | Task 1–4 | Dựng nền tảng dự án và hiển thị menu |
+| 2 | Task 5–7 | Giỏ hàng, đăng nhập và đặt đơn |
+| 3 | Task 8–10 | Thanh toán, bàn giao và nghiệp vụ nâng cao |
+
+Ở Sprint 2, nhóm làm theo thứ tự 5 → 7 → 6, vì API tạo đơn (Task 6) cần đăng nhập JWT (Task 7) làm trước.
 
 <!-- sp-totals:start -->
 - **Sprint 1: 12 SP** — hoàn thành ngày 21/10/2026.
@@ -62,59 +67,51 @@ Tổng SP theo Sprint (cả 3 Sprint đều đã đạt Sprint Goal):
 
 ## 4. Daily Scrum
 
-### Ghi nhận cuộc họp thứ Hai, 26/10/2026
+### Thứ Hai, 26/10/2026
 
-- Thời lượng: 15 phút.
-- Nội dung thực tế: trao đổi và phân công công việc cho các thành viên.
-- Tiến độ tại thời điểm họp: các đầu việc mới được giao chưa bắt đầu thực hiện.
+Họp 15 phút để phân công công việc cho từng người.
 
-| Ngày | Đã làm | Sẽ làm | Vướng mắc |
+| Đã làm | Sẽ làm | Vướng mắc |
+|---|---|---|
+| Họp và chia việc cho cả nhóm. | Mọi người bắt đầu làm phần được giao. Trường viết unit test cho `vnd()` và `cartCount()`, theo dõi Daily và chuẩn bị Burndown. | Không có. |
+
+### Thứ Ba, 27/10/2026
+
+Các thành viên báo cáo tiến độ cho Scrum Master:
+
+| Thành viên | Đã làm | Sẽ làm | Vướng mắc |
 |---|---|---|---|
-| 26/10/2026 (Thứ Hai) | Đã họp nhóm 15 phút và thống nhất phân công công việc; chưa triển khai các đầu việc mới tại thời điểm họp. | Các thành viên bắt đầu thực hiện nhiệm vụ đã nhận. Trường viết unit test cho `vnd()` và `cartCount()`, theo dõi Daily và chuẩn bị Burndown. | Chưa có thông tin được xác nhận về vướng mắc trong buổi họp. |
+| La Hữu Mẫn (Tester) | Hiện nhãn "Hết hàng" và khóa nút "Thêm vào giỏ" khi hết hàng. Test đổi size/topping, giỏ hàng, đăng ký, thanh toán Ví, "Đơn của tôi". | Tổng hợp kết quả test Task 3, 4, 5, 8, 9. | Không có. |
+| Quách Anh Vũ (Tester, Reviewer) | Viết file `backend/http/api.http`. Test trùng email, sai mật khẩu, giỏ rỗng, mã giảm giá, thanh toán thành công/thất bại, dùng lại Idempotency-Key. PR #3 đã merge. | Tổng hợp kết quả test Task 6–10, review các PR. | Không có. |
+| Đặng Tuấn Vỹ (PO) | Thêm ô tìm món theo tên trên Menu (PR #4). Nghiệm thu Task 1, 2, 3, 4, 8, 9. Viết phản hồi khách hàng và backlog bản sau. | Chuẩn bị nghiệm thu ở buổi Review. | Không có. |
+| Trần Minh Trí (Tài liệu, Demo) | Thêm trang 404 tiếng Việt và footer (PR #1). Cập nhật README. | Làm phần quản lý tồn kho nguyên liệu (đã merge PR #5 ngày 02/11). Chuẩn bị demo. | Không có. |
+| Quách Văn Trường (Scrum Master) | Viết 12 unit test cho `vnd()` và `cartCount()` (PR #2). Chạy test, lint, build đều đạt. | Ước lượng story points và vẽ Burndown. | Không có. |
 
-### Cập nhật công việc thứ Ba, 27/10/2026
+### Tình hình hiện tại (03/11/2026)
 
-- Nguồn ghi nhận: nội dung 4 thành viên gửi cho Scrum Master và đối chiếu mã nguồn trên nhánh `main`.
-- Đây là bản tổng hợp thông tin đã nhận. Giờ họp, thời lượng thực tế và danh sách người tham dự Daily thứ Ba chưa được cung cấp để bổ sung vào biên bản.
-- Các mô tả kiểm thử dưới đây là phạm vi công việc thành viên gửi; kết quả Đạt/Không đạt hoặc PASS/FAIL chỉ được ghi nhận khi có báo cáo thực tế.
-
-| Thành viên | Nội dung đã nhận | Đối chiếu repository | Việc tiếp theo / thông tin cần bổ sung |
-|---|---|---|---|
-| La Hữu Mẫn - Tester luồng chính | Hiện nhãn "Hết hàng", khóa nút "Thêm vào giỏ" khi stock = 0; kiểm thử đổi size/topping, giỏ hàng, đăng ký email mới, thanh toán Ví và "Đơn của tôi". Phạm vi nghiệm thu: Task 3, 4, 5, 8, 9. | `frontend/src/app/products/[id]/page.tsx` đã có kiểm tra `stock <= 0`, nhãn hết hàng và khóa/chặn thêm vào giỏ trên `main`. | Bổ sung bảng Đạt/Không đạt cho từng bước đã chạy và ảnh lỗi nếu có. Nội dung đã nhận chưa kèm kết quả kiểm thử từng bước. |
-| Quách Anh Vũ - Tester lỗi, Reviewer | Bổ sung `backend/http/api.http`; kiểm thử đăng ký trùng email, sai mật khẩu, giỏ rỗng, mã sai/BREW10, thanh toán thành công/thất bại, dùng lại Idempotency-Key và thanh toán lại sau lỗi; review/Approve các PR. Phạm vi nghiệm thu: Task 6, 7, 8, 9, 10. | File HTTP đã có các request mẫu và kết quả mong đợi; PR #3 đã merge vào `main`. Chưa có review/Approve được ghi nhận trên GitHub ở PR #1-#4 tại thời điểm đối chiếu. | Bổ sung bảng PASS/FAIL thực tế và ghi nhận review theo phân công. Request mẫu và trạng thái PR đã merge chưa thay thế cho kết quả chạy test hoặc xác nhận review. |
-| Đặng Tuấn Vỹ - Product Owner | Thêm tìm món theo tên trên Menu, lọc phía trình duyệt; nghiệm thu Task 1, 2, 3, 4, 8, 9; viết phản hồi khách hàng và backlog bản sau. | Tìm kiếm đã có trong `frontend/src/app/page.tsx`; PR #4 đã merge. Mục 10 đã có nghiệm thu sơ bộ dựa trên source, phản hồi mô phỏng và backlog. | Xác nhận kết quả chạy thực tế trước khi chốt nghiệm thu; bổ sung phản hồi thực tế sau Review nếu có. Giữ rõ phạm vi đánh giá sơ bộ của mục 10. |
-| Trần Minh Trí - Tài liệu, Demo | Thêm trang 404 tiếng Việt, footer gắn vào layout; cập nhật tên/MSSV và hướng dẫn README theo thay đổi code. Hoàn thành bộ nghiệp vụ quản lý tồn kho nguyên liệu, kiểm soát định lượng thời gian thực, báo cáo cân đối xuất-nhập-tồn, chỉnh sửa công thức, kiểm soát nguyên liệu dùng chung. | `not-found.tsx`, `footer.tsx` và phần gắn Footer vào `layout.tsx` đã có trên `main`; PR #1 đã merge. README đã có tên/MSSV các thành viên và nội dung chức năng mới. | Bộ quản lý tồn kho nguyên liệu đã merge qua PR #5 ngày 02/11/2026 (phần mở rộng ngoài 10 task, xem mục 10.2). |
-
-**Cập nhật phần việc Scrum Master - Quách Văn Trường:** PR #2 đã merge vào `main`, gồm 12 unit test cho `vnd()` và `cartCount()`, hướng dẫn chạy test và ghi nhận buổi họp thứ Hai. Khi tích hợp với thay đổi mới của nhóm, 12 test, lint và build đã chạy thành công. Đã chốt bộ story points (mục 2) và vẽ Burndown theo ngày hoàn thành thực tế của từng task (mục 5).
-
-### Tình trạng hiện tại (03/11/2026)
-
-- **10/10 task trong Product Backlog đã hoàn thành**: Sprint 1 xong 21/10, Sprint 2 xong 21/10, Sprint 3 xong 26/10/2026. Còn lại 0 SP.
-- Các PR #1–#4 đã merge ngày 27/10/2026, PR #5 (tồn kho nguyên liệu, phần mở rộng) đã merge ngày 02/11/2026.
-- 28/10/2026: chỉnh giao diện (màu nút size/topping, trang xác nhận, lịch sử đơn, checkout, menu) theo màu header.
-- 03/11/2026: Trí hoàn thiện README (chức năng mới, kịch bản demo, tài khoản thử nghiệm).
-- Không còn vướng mắc chặn tiến độ.
+- 10/10 task đã xong, còn lại 0 SP. Sprint 1 và 2 xong ngày 21/10, Sprint 3 xong ngày 26/10.
+- PR #1–#4 merge ngày 27/10, PR #5 (tồn kho nguyên liệu) merge ngày 02/11.
+- 28/10: chỉnh màu giao diện các trang cho đồng bộ với header.
+- 03/11: Trí hoàn thiện README.
 
 ## 5. Burndown
-
-**Trạng thái: đã có Burndown thực tế.** Biểu đồ có đủ 2 đường Lý tưởng (Ideal) và Thực tế (Actual), trục X theo ngày thật từ 20/10 đến 28/10/2026 (Sprint Review).
 
 ![Burndown BrewLite: 53 SP, hoàn thành 10/10 task ngày 26/10/2026](burndown/burndown.png)
 
 ### 5.1. Cách đọc biểu đồ
 
-- **Trục Y:** số story points **còn lại** (chưa làm xong). Bắt đầu ở 53 SP (tổng 10 task).
-- **Trục X:** các ngày, điểm đầu tiên là lúc bắt đầu 20/10, mỗi điểm sau là **cuối ngày** đó.
-- **Đường nét đứt xám (Lý tưởng):** nếu nhóm làm đều tay mỗi ngày thì SP giảm theo đường thẳng từ 53 về 0 vào ngày 28/10.
-- **Đường cam (Thực tế):** SP còn lại thật ở cuối mỗi ngày, tính từ ngày hoàn thành của từng task ở mục 2.
-- **Cột màu chồng nhau:** phần SP còn lại thuộc Sprint 1 (xanh), Sprint 2 (tím), Sprint 3 (hồng). Nhìn cột sẽ biết ngày đó Sprint nào còn việc.
+- **Trục Y:** số SP còn lại (chưa làm xong). Ban đầu là 53 SP.
+- **Trục X:** các ngày từ 20/10 đến 28/10 (ngày Sprint Review). Mỗi điểm là SP còn lại vào cuối ngày đó.
+- **Đường nét đứt (Lý tưởng):** nếu làm đều mỗi ngày thì SP giảm thẳng từ 53 về 0 vào ngày 28/10.
+- **Đường cam (Thực tế):** SP còn lại thật, tính từ ngày hoàn thành của từng task.
+- **Cột màu:** SP còn lại của Sprint 1 (xanh), Sprint 2 (tím), Sprint 3 (hồng).
 
 ### 5.2. Cách tính
 
-- `S` = 53 SP, `D` = 9 ngày (20/10 → 28/10), `d` = số ngày đã qua.
+- Tổng `S` = 53 SP, `D` = 9 ngày (20/10 → 28/10), `d` = số ngày đã qua.
 - **Lý tưởng** = `S × (1 − d / D)`. Ví dụ cuối ngày 21/10 (d = 2): 53 × (1 − 2/9) ≈ 41.2 SP.
-- **Thực tế** = tổng SP của các task **chưa** hoàn thành tính đến cuối ngày. Task chỉ được trừ khi xong trọn vẹn (không trừ theo phần trăm cảm tính).
-- Ví dụ: cuối 20/10 xong Task 1, 2, 3 (2 + 2 + 3 = 7 SP) nên còn 53 − 7 = 46 SP.
+- **Thực tế** = tổng SP của các task chưa xong. Task chỉ được trừ SP khi đã xong hoàn toàn.
+- Ví dụ: cuối ngày 20/10 xong Task 1, 2, 3 (2 + 2 + 3 = 7 SP), còn 53 − 7 = 46 SP.
 
 <!-- burndown-daily:start -->
 | Thời điểm | Task hoàn thành trong ngày | SP trừ | Còn lại S1 | Còn lại S2 | Còn lại S3 | Lý tưởng | **Thực tế** |
@@ -131,16 +128,15 @@ Tổng SP theo Sprint (cả 3 Sprint đều đã đạt Sprint Goal):
 | Cuối 28/10 | — | 0 | 0 | 0 | 0 | 0 | **0** |
 <!-- burndown-daily:end -->
 
-### 5.3. Nhận xét tiến độ
+### 5.3. Nhận xét
 
-- **Đường Thực tế luôn nằm dưới hoặc bằng đường Lý tưởng:** nhóm làm nhanh hơn kế hoạch. Riêng ngày 21/10 xong 6 task (Task 4–9, 33 SP), hoàn thành trọn Sprint 1 và Sprint 2.
-- **Ngày 22–25/10 đường Thực tế đi ngang ở 13 SP:** chỉ còn Task 10 (13 SP, lớn nhất). Ngày 24/10 đã làm state machine và idempotency nhưng Task 10 chưa xong trọn nên chưa được trừ SP.
-- **Ngày 26/10 về 0:** Task 10 xong (khóa tồn kho, khuyến mãi, test tích hợp). Toàn bộ backlog hoàn thành **sớm 2 ngày** so với mốc Review 28/10.
-- **Bài học cho Retrospective:** Task 10 quá lớn (13 SP) làm đường Thực tế đi ngang 4 ngày. Lần sau nên tách thành các task nhỏ (state machine, idempotency, tồn kho, khuyến mãi) để theo dõi tiến độ sát hơn.
+- Đường Thực tế luôn nằm dưới hoặc bằng đường Lý tưởng, tức là nhóm làm nhanh hơn kế hoạch. Riêng ngày 21/10 xong 6 task (33 SP), hoàn thành luôn Sprint 1 và Sprint 2.
+- Từ 22/10 đến 25/10 đường Thực tế đi ngang ở 13 SP vì chỉ còn Task 10. Ngày 24/10 đã làm xong state machine và idempotency, nhưng Task 10 chưa xong hết nên chưa được trừ.
+- Ngày 26/10 Task 10 xong, về 0 SP, sớm 2 ngày so với ngày Review (28/10).
 
-### 5.4. Dữ liệu và vẽ lại ảnh
+### 5.4. Vẽ lại biểu đồ
 
-Dữ liệu: [story-points.csv](burndown/story-points.csv) (SP, Sprint, ngày hoàn thành, commit minh chứng của từng task). Script tự cập nhật bảng ở mục 2, mục 3, mục 5.2 và vẽ lại `burndown.png`:
+Dữ liệu nằm trong [story-points.csv](burndown/story-points.csv). Khi sửa file này, chạy lại script để cập nhật biểu đồ và các bảng ở mục 2, 3, 5:
 
 ```bash
 python -m pip install -r docs/burndown/requirements.txt
@@ -149,62 +145,59 @@ python docs/burndown/generate_charts.py
 
 ## 6. Sprint Review
 
-**Lịch: sáng thứ Tư, 28/10/2026.** Kết quả bàn giao (Increment) của cả 3 Sprint đã có trên nhánh `main`:
+Sprint Review sáng thứ Tư, 28/10/2026.
 
 | Sprint | Sprint Goal | SP | Kết quả |
 |---|---|---|---|
-| 1 | Nền tảng và hiển thị menu | 12 | Đạt — xong 21/10 |
-| 2 | Giỏ hàng, đặt đơn, đăng nhập | 15 | Đạt — xong 21/10 |
-| 3 | Thanh toán, bàn giao, nghiệp vụ nâng cao | 26 | Đạt — xong 26/10 |
+| 1 | Dựng nền tảng và hiển thị menu | 12 | Đạt, xong 21/10 |
+| 2 | Giỏ hàng, đăng nhập, đặt đơn | 15 | Đạt, xong 21/10 |
+| 3 | Thanh toán, bàn giao, nghiệp vụ nâng cao | 26 | Đạt, xong 26/10 |
 
-Kịch bản demo theo từng Sprint:
+Nội dung demo:
 
-| Phạm vi | Kịch bản demo | Bằng chứng trình bày |
-|---|---|---|
-| Sprint 1 - Task 1-4 | Khởi động dự án; gọi API menu; tìm món; mở chi tiết và đổi size/topping để kiểm tra giá. | App/API chạy được, dữ liệu món thật, kết quả kiểm thử các lựa chọn. |
-| Sprint 2 - Task 5-7 | Thêm/sửa/xóa giỏ hàng; đăng ký/đăng nhập; tạo đơn với giỏ hợp lệ và kiểm tra giỏ rỗng. | Bảng test của tester, phản hồi API, mã đơn thật và trạng thái PENDING. |
-| Sprint 3 - Task 8-10 | Thanh toán mô phỏng thành công/thất bại; thử lại; xác nhận/lịch sử đơn; kiểm thử trạng thái đơn, idempotency và tồn kho đồng thời. | Kết quả test, mã đơn/trạng thái thật, log hoặc ảnh minh chứng và lệnh chạy Docker/README. |
+| Sprint | Demo |
+|---|---|
+| 1 (Task 1–4) | Chạy dự án, xem menu, tìm món, mở chi tiết món, đổi size/topping để xem giá thay đổi. |
+| 2 (Task 5–7) | Thêm/sửa/xóa món trong giỏ, đăng ký, đăng nhập, tạo đơn (trạng thái PENDING), thử đặt đơn với giỏ rỗng. |
+| 3 (Task 8–10) | Thanh toán Ví/Thẻ thành công và thất bại, thanh toán lại, xem trang xác nhận và lịch sử đơn, chạy bằng Docker. |
 
-- Trí dẫn demo; Tú hỗ trợ kỹ thuật; Trường điều phối và ghi nhận; Vỹ đối chiếu tiêu chí nghiệm thu; Mẫn và Vũ trình bày kết quả kiểm thử theo phân công.
-- Sau Review, nhóm đã làm thêm: chỉnh giao diện theo màu header (28/10) và bộ quản lý tồn kho nguyên liệu (PR #5, 02/11) — các hạng mục mở rộng ở mục 10.2.
-- Bảng ở mục 10 hiện là đánh giá sơ bộ dựa trên source; phản hồi tại mục 10.1 được ghi rõ là mô phỏng. Chỉ cập nhật thành phản hồi thực tế khi đã nhận được trong Review.
+Phân công: Trí dẫn demo, Tú hỗ trợ kỹ thuật, Trường điều phối, Vỹ nghiệm thu theo tiêu chí, Mẫn và Vũ trình bày kết quả test.
+
+Sau Review, nhóm làm thêm: chỉnh màu giao diện (28/10) và phần quản lý tồn kho nguyên liệu (PR #5, 02/11). Xem mục 10.2.
 
 ## 7. Retrospective
 
-**Dự kiến thực hiện sau Review sáng 28/10/2026. Các mục dưới đây là nội dung gợi ý để nhóm thảo luận, chưa phải kết luận của một cuộc họp đã diễn ra.**
+**Điều làm tốt**
 
-- **Cơ sở thảo luận về điều làm tốt:** các phần code đã được tích hợp vào `main`; có unit test frontend và hướng dẫn chạy; đã tổng hợp phân công và thông tin thành viên gửi. Nhóm cần tự xác nhận điều gì thực sự giúp phối hợp hiệu quả.
-- **Vấn đề cần xem xét (rút ra từ Burndown và GitHub):**
-  - Task 10 quá lớn (13 SP) nên đường Thực tế đi ngang 4 ngày (22–25/10), khó theo dõi tiến độ. Lần sau tách nhỏ thành các task ≤ 5 SP.
-  - Khối lượng dồn vào ngày 21/10 (33 SP trong 1 ngày) — nên chia việc đều hơn trong Sprint.
-  - PR #1–#5 được merge nhưng chưa có lượt review/Approve trên GitHub.
-  - Chưa có bảng PASS/FAIL thực tế của tester được lưu lại trong repo.
-- **Cách chốt cải tiến:** chọn các vấn đề quan trọng, thống nhất hành động có người phụ trách và thời hạn; ghi lại quyết định thực tế sau họp.
+- Hoàn thành cả 10 task, sớm 2 ngày so với kế hoạch.
+- Code của mọi người đều được đưa lên `main` qua Pull Request.
+- Có unit test cho frontend, test state machine và test tích hợp cho backend.
 
-| Hành động cải tiến đề xuất | Người dự kiến phụ trách | Mốc đề xuất |
+**Điều cần cải thiện**
+
+- Task 10 quá lớn (13 SP) nên Burndown đi ngang 4 ngày, khó theo dõi tiến độ. Lần sau nên chia nhỏ, mỗi task không quá 5 SP.
+- Việc dồn vào ngày 21/10 (33 SP trong 1 ngày). Nên chia đều hơn trong Sprint.
+- Các PR được merge nhưng chưa có lượt review/Approve trên GitHub.
+- Kết quả test của tester chưa được lưu thành bảng trong repo.
+
+**Hành động cho lần sau**
+
+| Hành động | Người phụ trách | Khi nào |
 |---|---|---|
-| Thống nhất ước lượng, phạm vi Sprint và ghi SP còn lại mỗi ngày. | Nhóm thực hiện công việc cùng Scrum Master; PO làm rõ phạm vi. | Sprint Planning tiếp theo và cuối mỗi ngày làm việc. |
-| Lưu bảng kết quả kiểm thử và ảnh lỗi tại nơi nhóm cùng truy cập được. | Mẫn, Vũ. | Trước khi chốt nghiệm thu hạng mục. |
-| Ghi nhận review trên Pull Request trước khi merge. | Reviewer được phân công, gồm Vũ đối với PR của thành viên khác. | Từng Pull Request tiếp theo. |
-
-Các người phụ trách và mốc trên là đề xuất để nhóm xác nhận trong Retrospective, chưa được ghi là cam kết đã thông qua.
+| Ước lượng SP ngay khi lập kế hoạch Sprint, ghi SP còn lại cuối mỗi ngày. | Cả nhóm, Scrum Master theo dõi | Sprint Planning và cuối mỗi ngày |
+| Lưu bảng kết quả test (PASS/FAIL) và ảnh lỗi vào repo. | Mẫn, Vũ | Trước khi nghiệm thu |
+| Mỗi PR phải có ít nhất 1 người review/Approve rồi mới merge. | Vũ và người được phân công | Mỗi Pull Request |
 
 ## 8. Definition of Done
-- Code chạy được, không lỗi build, đúng tiêu chí chấp nhận.
-- Commit rõ ràng, được review trong nhóm.
-- API có validate, UI có loading/lỗi.
+
+Một task được coi là xong khi:
+
+- Code chạy được, build không lỗi, đúng tiêu chí chấp nhận.
+- Commit rõ ràng, có người trong nhóm review.
+- API có kiểm tra dữ liệu đầu vào, giao diện có trạng thái đang tải và báo lỗi.
 - README có hướng dẫn chạy.
 
-**Cách áp dụng khi chốt nghiệm thu:**
-
-| Tiêu chí | Bằng chứng hiện có | Phần cần xác nhận thêm |
-|---|---|---|
-| Code chạy/build được và đáp ứng tiêu chí chấp nhận. | 12 unit test frontend, lint và build đã chạy đạt khi tích hợp PR #2. | Test của hai helper không thay thế kiểm thử end-to-end, backend và từng task chức năng. |
-| Commit rõ ràng, được review trong nhóm. | Có commit và các PR đã merge. | Lưu xác nhận review theo phân công; merge không tự chứng minh đã review/Approve. |
-| API validate; UI có loading/lỗi. | Có DTO và xử lý trạng thái trong source. | Chạy các tình huống hợp lệ/lỗi và ghi kết quả thực tế. |
-| Có hướng dẫn chạy trong README. | README có Docker, cách chạy local và lệnh test. | Đối chiếu lại hướng dẫn trên máy demo trước bàn giao. |
-
-SP của hạng mục chỉ được tính hoàn thành khi có đủ bằng chứng đạt DoD theo quy ước nhóm đã xác nhận. Giữ riêng trạng thái có code, đã merge và đã nghiệm thu để báo cáo đúng tiến độ.
+Hiện tại: 12 unit test frontend, lint và build đều chạy đạt. README đã có hướng dẫn chạy bằng Docker, chạy local và chạy test.
 
 ## 9. Ghi chú
 - Task 4 commit chung với Task 5. Task 1 và Task 7 có 2 commit (backend/frontend riêng).

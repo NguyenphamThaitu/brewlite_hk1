@@ -13,7 +13,7 @@ Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ á
 | **Đặng Tuấn Vỹ** | 3124410412 | Product Owner | Quản trị Product Backlog, làm rõ yêu cầu chức năng, nghiệm thu sản phẩm |
 | **La Hữu Mẫn** | 3122410235 | Tester luồng chính | Kiểm thử các luồng đặt món, giỏ hàng, tùy chọn size/topping, thanh toán và kiểm tra tồn kho |
 | **Quách Anh Vũ** | 3124410410 | Tester lỗi, Reviewer | Kiểm thử các trường hợp biên/lỗi (trùng email, sai mã, lỗi giao dịch), viết tài liệu HTTP, review code |
-| **Trần Minh Trí** | 3124410371 | Fullstack Dev, Tài liệu, Demo | Xây dựng giao diện & module quản lý kho nguyên liệu, trang 404, footer, viết tài liệu README và dẫn demo |
+| **Trần Minh Trí** | 3124410371 | Tài liệu, Demo | Xây dựng chức năng kiểm soát nguyên liệu, trang 404, footer, viết tài liệu README và dẫn demo |
 
 ---
 

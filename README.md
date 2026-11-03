@@ -123,8 +123,7 @@ npm run dev
   - Email: `admin@brewlite.vn`
   - Mật khẩu: `admin123`
 - **Tài khoản Khách hàng:**
-  - Có thể đăng ký tài khoản mới trực tiếp tại trang web hoặc dùng:
-  - Email: `customer@brewlite.vn` / Mật khẩu: `123456`
+  - Có thể đăng ký tài khoản mới trực tiếp tại trang web
 - **Mã khuyến mãi giảm 10%:** `BREW10`
 
 ---

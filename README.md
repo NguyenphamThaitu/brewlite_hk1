@@ -107,7 +107,7 @@ cd backend
 # Chạy Unit Tests
 npm test
 
-# Chạy E2E Tests (bao gồm kiểm thử toàn diện 20 ca kiểm thử cho kho, dự báo 500 ly, đồng thời, và đối soát)
+# Chạy E2E Tests 
 npm run test:e2e
 
 # Chạy linter
@@ -121,31 +121,6 @@ npm test
 npm run lint
 npm run build
 ```
-
----
-
-## 📋 Kịch bản Demo: "500 ly Cà phê sữa M + 500 ly Trà đào M"
-
-Để chứng minh đầy đủ yêu cầu nghiệp vụ chính của đề bài:
-
-1. Đăng nhập vào hệ thống bằng tài khoản Admin:
-   - Truy cập http://localhost:3000/login
-   - Nhập `admin@brewlite.vn` / `admin123`
-2. Bấm vào nút **Quản lý kho** màu vàng cam trên thanh Header (hoặc mở trực tiếp http://localhost:3000/admin/inventory).
-3. Chọn tab **"Dự báo cơ cấu bán hàng (500+ ly)"**.
-4. Bấm vào nút kịch bản nhanh: **"★ 500 ly Cà phê sữa M + 500 ly Trà đào M"** (hoặc tự chọn món, chọn Size M và nhập số lượng 500 vào 2 dòng sản phẩm).
-5. Bấm nút **"Tính toán dự báo nguyên liệu"**.
-6. **Quan sát kết quả tính toán:**
-   - `Cà phê hạt / bột`: $500 \times 25\text{g} = 12.500\text{g}$.
-   - `Sữa đặc`: $500 \times 40\text{g} = 20.000\text{g}$.
-   - `Cốt trà đào`: $500 \times 15\text{g} = 7.500\text{g}$.
-   - `Siro đào`: $500 \times 35\text{ml} = 17.500\text{ml}$.
-   - `Đường nước`: $500 \times 20\text{ml} = 10.000\text{ml}$.
-   - `Ly giấy kèm nắp` (Nguyên liệu dùng chung gộp lại): $(500 + 500) \times 1 = 1.000\text{ pcs}$.
-   - Bảng hiển thị đầy đủ các cột: **Cần dùng**, **Tồn thực tế**, **Đang giữ chỗ**, **Khả dụng**, **Thiếu hụt**, **Dự kiến còn lại**, và nhãn đánh giá tính khả thi tổng thể.
-7. **Thử nghiệm kịch bản thiếu hụt:**
-   - Chọn kịch bản "Thiếu hụt (1.500 ly cỡ L)" hoặc tăng số lượng ly lên 2.000 ly. Bấm tính toán và thấy hệ thống báo đỏ: *"Kế hoạch KHÔNG THỂ đáp ứng toàn bộ (Thiếu hụt nguyên liệu)"*, nêu rõ định lượng thiếu hụt từng thành phần.
-   - Bấm nút **+ Nhập kho**, chọn nguyên liệu thiếu và nhập bù thêm số lượng, sau đó bấm tính lại để thấy kế hoạch chuyển sang trạng thái khả thi.
 
 ---
 

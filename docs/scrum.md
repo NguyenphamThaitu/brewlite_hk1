@@ -26,11 +26,11 @@ Nhóm đã hoàn thành cả 10 task. Mỗi task được ước lượng bằng
 | 3 | Trang Menu | 1 | 1 | 3 | Hoàn thành | 20/10/2026 | `76002ae` |
 | 4 | Chi tiết và tùy chọn sản phẩm | 1 | 1 | 5 | Hoàn thành | 21/10/2026 | `575dfc5` |
 | 5 | Giỏ hàng | 2 | 1 | 5 | Hoàn thành | 21/10/2026 | `575dfc5` |
-| 6 | API tạo đơn hàng | 2 | 1 | 5 | Hoàn thành | 21/10/2026 | `4b5237e` |
-| 7 | Đăng ký / Đăng nhập JWT | 2 | 1 | 5 | Hoàn thành | 21/10/2026 | `d491869 + e4ea0fc` |
+| 6 | API tạo đơn hàng | 2 | 1 | 5 | Hoàn thành | 21/10/2026 | `e783e77` |
+| 7 | Đăng ký / Đăng nhập JWT | 2 | 1 | 5 | Hoàn thành | 21/10/2026 | `d491869 + d15122a` |
 | 8 | Thanh toán không tiền mặt | 3 | 1 | 5 | Hoàn thành | 21/10/2026 | `6abfdcc + 3ca42b2` |
-| 9 | Xác nhận, lịch sử đơn và bàn giao | 3 | 1 | 8 | Hoàn thành | 21/10/2026 | `9d1e1e0 + 41cc986 + 7a5329f` |
-| 10 | Nghiệp vụ backend nâng cao | 3 | 1 | 13 | Hoàn thành | 26/10/2026 | `517633a → 62fba46` |
+| 9 | Xác nhận, lịch sử đơn và bàn giao | 3 | 1 | 8 | Hoàn thành | 21/10/2026 | `2d9fd02 + c591efc + 7a5329f` |
+| 10 | Nghiệp vụ backend nâng cao | 3 | 1 | 13 | Hoàn thành | 26/10/2026 | `a1feb41 → 62fba46` |
 | **Tổng** | **10 task** | **3 Sprint** | **10** | **53** | **10/10 hoàn thành** | | |
 <!-- sp-table:end -->
 

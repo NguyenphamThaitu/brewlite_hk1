@@ -47,36 +47,6 @@ Hệ thống đặt cà phê và thanh toán không dùng tiền mặt, tích h�
 
 ---
 
-## 📦 Kiến trúc & Thiết kế Quản lý Nguyên liệu (Inventory Design)
-
-### 1. Đơn vị cơ sở (Base Units)
-Hệ thống sử dụng các đơn vị đo lường cơ sở không thể chia nhỏ nhằm tránh sai số làm tròn số học:
-- **`g` (Gram):** Cà phê hạt/bột, Sữa đặc, Cốt trà đào, Trân châu đen.
-- **`ml` (Mililít):** Sữa tươi thanh trùng, Siro đào, Đường nước, Kem béo.
-- **`pcs` (Cái/Chiếc):** Ly giấy kèm nắp (nguyên liệu dùng chung cho tất cả các loại đồ uống).
-
-*Lưu ý:* Lưu trữ trong PostgreSQL dưới dạng trường số học chính xác cao `DECIMAL(12, 2)`.
-
-### 2. Vòng đời Giữ chỗ & Tiêu hao (Reservation Lifecycle)
-Hệ thống chọn **nguyên liệu làm nguồn tồn kho có thẩm quyền duy nhất (Authoritative Source)**:
-- **`PENDING` (Tạo đơn):** Khóa dòng các nguyên liệu cần thiết bằng `SELECT ... FOR UPDATE` sắp xếp tăng dần theo ID (ngăn ngừa deadlock và race condition tuyệt đối). Tăng số lượng giữ chỗ `reservedQty`. Tạo snapshot giữ chỗ bất biến trong bảng `OrderIngredientReservation` với trạng thái `RESERVED`. Hạn giữ chỗ mặc định là **10 phút** (`reservationExpiresAt`).
-- **`PAID` (Thanh toán thành công):** Tiêu hao giữ chỗ chính xác 1 lần: giảm đồng thời `stock` và `reservedQty`, chuyển trạng thái reservation sang `CONSUMED`, tạo bản ghi nhật ký biến động kho `InventoryMovement` loại `CONSUMPTION`.
-- **`PAYMENT_FAILED` (Thanh toán lỗi):** Giữ nguyên trạng thái `RESERVED` trong thời hạn 10 phút để khách hàng có thể thử lại thanh toán cho chính đơn hàng đó.
-- **`CANCELLED` hoặc Hết hạn (Expiration):** Giải phóng giữ chỗ: giảm `reservedQty`, chuyển reservation sang `RELEASED`. Nếu đơn đã thanh toán bị hủy trước khi pha chế, phục hồi lại `stock` thực tế và ghi nhận `STOCK_IN`.
-- **Dọn dẹp tự động:** Dịch vụ kiểm tra và dọn dẹp các đơn quá hạn 10 phút tự động kích hoạt định kỳ và ngay khi khởi động lại backend.
-
-### 3. Nguyên tắc Báo cáo ngày (Reporting Rules)
-- Múi giờ chuẩn: `Asia/Ho_Chi_Minh` (UTC+7), ranh giới ngày từ `00:00:00` đến `23:59:59.999`.
-- **Công thức cân đối toán học:**
-  $$\text{Tồn cuối ngày} = \text{Tồn đầu ngày} + \text{Nhập trong ngày} - \text{Xuất tiêu hao pha chế} + \text{Điều chỉnh kiểm kê}$$
-- **Quy tắc quan trọng:** Thao tác giữ chỗ (`RESERVED`) và giải phóng giữ chỗ (`RELEASED`) không được tính là tiêu hao vật lý. Chỉ các đơn hàng thanh toán thành công (`PAID`) mới sinh biến động xuất kho `CONSUMPTION`.
-
-### 4. Xử lý tồn kho cũ (Legacy Product.stock Handling)
-- Giá trị tồn kho cũ `Product.stock` không thể quy đổi ngược thành định lượng từng nguyên liệu pha chế.
-- Toàn bộ nghiệp vụ kiểm tra bán hàng, tạo đơn và dự báo đều sử dụng số dư nguyên liệu thực tế từ bảng `Ingredient`. Trường `Product.stock` được giữ lại ở mức tương thích cơ bản và không được trừ song song để tránh sai lệch dữ liệu.
-
----
-
 ## 🚀 Hướng dẫn khởi chạy & Cài đặt
 
 ### Yêu cầu tiên quyết

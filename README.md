@@ -13,7 +13,7 @@ Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ á
 | **Đặng Tuấn Vỹ** | 3124410412 | Product Owner | Quản trị Product Backlog, làm rõ yêu cầu chức năng, nghiệm thu sản phẩm |
 | **La Hữu Mẫn** | 3122410235 | Tester luồng chính | Kiểm thử các luồng đặt món, giỏ hàng, tùy chọn size/topping, thanh toán và kiểm tra tồn kho |
 | **Quách Anh Vũ** | 3124410410 | Tester lỗi, Reviewer | Kiểm thử các trường hợp biên/lỗi (trùng email, sai mã, lỗi giao dịch), viết tài liệu HTTP, review code |
-| **Trần Minh Trí** | 3124410371 | Tài liệu, Demo | Xây dựng chức năng kiểm soát nguyên liệu, trang 404, footer, viết tài liệu README và dẫn demo |
+| **Trần Minh Trí** | 3124410371 | Developer Back-office | Xây dựng phân hệ Back-office (Quản trị kho & định lượng, Báo cáo doanh thu, Quản lý khuyến mãi & Thực đơn món), viết tài liệu và dẫn demo |
 
 ---
 
@@ -31,18 +31,24 @@ Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ á
 ## ✨ Tổng quan chức năng hệ thống
 
 ### 1. Phía Khách hàng (Storefront)
-- **Menu & Tìm kiếm:** Xem danh sách đồ uống, hỗ trợ tìm kiếm tức thì theo tên có chuẩn hóa tiếng Việt không dấu.
-- **Tùy biến món:** Chọn kích cỡ (Size S/M/L) và topping (Trân châu, Kem), tự động tính toán giá tương ứng.
+- **Menu & Tìm kiếm:** Xem danh sách cà phê truyền thống và pha máy, bố cục tinh gọn, hỗ trợ tìm kiếm tức thì theo tên có chuẩn hóa tiếng Việt không dấu.
+- **Tùy biến món:** Chọn kích cỡ (Size S/M/L) và tùy chọn custom (`+ Đậm cafe`), tự động tính toán giá tương ứng.
 - **Giỏ hàng:** Thêm món, điều chỉnh số lượng hoặc xóa món, tự động lưu trữ trạng thái giỏ hàng.
 - **Tài khoản:** Đăng ký và đăng nhập bảo mật với Bcrypt + JWT token.
-- **Thanh toán không dùng tiền mặt:** Chọn thanh toán qua Ví điện tử hoặc Thẻ ngân hàng, nhập mã khuyến mãi giảm giá (`BREW10`), tự động tích lũy điểm thưởng theo giá trị đơn hàng.
+- **Thanh toán không dùng tiền mặt:** Chọn thanh toán qua Ví điện tử hoặc Thẻ ngân hàng, áp dụng mã khuyến mãi hợp lệ, tự động tích lũy điểm thưởng theo giá trị đơn hàng.
 - **Theo dõi đơn hàng:** Xem trạng thái đơn hàng (`PENDING` ➔ `PAID` / `PAYMENT_FAILED` ➔ `PREPARING` ➔ `READY` ➔ `COMPLETED`) và lịch sử các đơn hàng đã đặt.
 
-### 2. Phía Quản lý (Admin Dashboard)
-- **Kho nguyên liệu:** Theo dõi định lượng thực tế, số lượng đang giữ chỗ và cảnh báo khi nguyên liệu chạm ngưỡng thấp.
-- **Nhập kho & Kiểm kê:** Nhập thêm nguyên liệu vào kho, điều chỉnh số dư sau kiểm kê định kỳ kèm ghi nhận lý do giải trình.
-- **Báo cáo cân đối ngày:** Bảng đối soát xuất - nhập - tồn nguyên liệu theo ngày chuẩn múi giờ Việt Nam (UTC+7).
-- **Quản lý công thức:** Xem và cập nhật định lượng thành phần nguyên liệu cho từng kích cỡ đồ uống và topping.
+### 2. Phía Quản lý (Admin Back-office)
+- **Quản lý Kho nguyên liệu (`/admin/inventory`):**
+  - Quản lý danh mục nguyên liệu: Thêm mới, xóa an toàn, đánh số thứ tự (STT) tự động liên tục.
+  - Theo dõi tồn thực tế, số lượng đang giữ chỗ và cảnh báo khi nguyên liệu chạm ngưỡng thấp.
+  - Nhập kho & Điều chỉnh kiểm kê kèm ghi nhận lý do giải trình.
+  - Báo cáo xuất - nhập - tồn cân đối theo ngày (UTC+7), đảm bảo kế thừa chuẩn kế toán: *Tồn cuối ca hôm trước = Tồn đầu ca hôm sau*.
+  - Quản lý định lượng công thức pha chế theo từng size (S/M/L) và tùy chọn custom.
+- **Quản lý Doanh thu & Khuyến mãi (`/admin/revenue`):**
+  - **Báo cáo Doanh thu:** Bộ lọc theo khoảng ngày (từ 00:00:00 đến 23:59:59 UTC+7), 4 thẻ KPI (Tổng doanh thu, Tổng đơn gồm số đơn hoàn tất & số đơn hủy, AOV, Tỷ lệ hoàn tất), danh sách đơn hàng và Top món bán chạy nhất trong kỳ.
+  - **Quản lý Mã khuyến mãi:** Thêm, sửa, xóa mã ưu đãi với thời gian hiệu lực (startDate - endDate), giới hạn lượt dùng và giá trị đơn tối thiểu.
+  - **Quản lý Thực đơn món:** Thêm món mới kèm tự động gán công thức mặc định để bán được ngay, chỉnh sửa giá/ảnh, upload ảnh trực tiếp từ máy tính, bật/tắt tạm ngừng bán hoặc xóa món vĩnh viễn.
 
 ---
 
@@ -64,14 +70,30 @@ Hệ thống đặt cà phê và thanh toán không dùng tiền mặt. Đồ á
 | Method | Endpoint | Quyền | Mô tả |
 |---|---|:---:|---|
 | `GET` | `/inventory/ingredients` | Admin | Xem danh sách số dư nguyên liệu và cảnh báo tồn thấp |
+| `POST` | `/inventory/ingredients` | Admin | Thêm nguyên liệu mới vào kho |
+| `DELETE` | `/inventory/ingredients/:id` | Admin | Xóa nguyên liệu và dọn dẹp liên kết công thức |
 | `POST` | `/inventory/stock-in` | Admin | Nhập thêm nguyên liệu vào kho |
 | `POST` | `/inventory/adjust` | Admin | Điều chỉnh số dư tồn kho kiểm kê kèm lý do |
 | `GET` | `/inventory/reports/daily` | Admin | Báo cáo cân đối xuất-nhập-tồn theo ngày (UTC+7) |
-| `GET` | `/inventory/recipes` | Admin | Xem danh sách công thức pha chế đồ uống & topping |
+| `GET` | `/inventory/recipes` | Admin | Xem danh sách công thức pha chế đồ uống & custom |
 | `PUT` | `/inventory/recipes/product` | Admin | Cập nhật định lượng món theo từng size |
-| `PUT` | `/inventory/recipes/topping` | Admin | Cập nhật định lượng topping |
+| `PUT` | `/inventory/recipes/topping` | Admin | Cập nhật định lượng custom |
 | `POST` | `/inventory/forecast` | Admin | Dự báo nhu cầu nguyên liệu theo cơ cấu bán hàng |
 | `GET` | `/inventory/product-availability/:id` | Public | Kiểm tra khả năng pha chế dựa trên tồn kho nguyên liệu |
+
+### 3. Quản trị Back-office (Doanh thu, Khuyến mãi & Thực đơn)
+| Method | Endpoint | Quyền | Mô tả |
+|---|---|:---:|---|
+| `GET` | `/admin/reports/revenue` | Admin | Báo cáo doanh thu theo khoảng ngày, KPIs, top món bán chạy |
+| `GET` | `/admin/promotions` | Admin | Xem danh sách toàn bộ mã khuyến mãi |
+| `POST` | `/admin/promotions` | Admin | Tạo mới mã khuyến mãi (hạn dùng, lượt dùng, đơn tối thiểu) |
+| `PUT` | `/admin/promotions/:id` | Admin | Cập nhật thông tin và điều kiện mã khuyến mãi |
+| `DELETE` | `/admin/promotions/:id` | Admin | Xóa mã khuyến mãi |
+| `GET` | `/admin/products` | Admin | Danh sách món thực đơn kèm trạng thái mở/ngừng bán |
+| `POST` | `/admin/products` | Admin | Tạo món mới, tự động khởi tạo công thức cơ bản |
+| `PUT` | `/admin/products/:id` | Admin | Cập nhật thông tin món, giá hoặc tạm ngừng bán |
+| `DELETE` | `/admin/products/:id` | Admin | Xóa vĩnh viễn món |
+| `POST` | `/admin/products/upload-image` | Admin | Upload ảnh món trực tiếp từ máy tính |
 
 ---
 

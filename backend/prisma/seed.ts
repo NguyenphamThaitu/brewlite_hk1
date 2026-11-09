@@ -5,10 +5,15 @@ const prisma = new PrismaClient();
 const WEB = process.env.WEB_URL ?? 'http://localhost:3000';
 
 const PRODUCTS = [
-  { name: 'Cà phê sữa', price: 35000, imageUrl: `${WEB}/menu/cafesua.jpg` },
-  { name: 'Americano', price: 40000, imageUrl: `${WEB}/menu/amricano.jpg` },
-  { name: 'Cappuccino', price: 45000, imageUrl: `${WEB}/menu/capu.jpg` },
-  { name: 'Trà đào', price: 39000, imageUrl: `${WEB}/menu/tradao.jpg` },
+  // Cà phê truyền thống
+  { name: 'Cà phê sữa', price: 35000, category: 'Cà phê truyền thống', imageUrl: `${WEB}/menu/cafesua.jpg` },
+  { name: 'Cà phê đen', price: 30000, category: 'Cà phê truyền thống', imageUrl: `${WEB}/menu/capheden.jpg` },
+  { name: 'Bạc xỉu', price: 38000, category: 'Cà phê truyền thống', imageUrl: `${WEB}/menu/bacxiu.jpg` },
+
+  // Cà phê pha máy
+  { name: 'Espresso', price: 30000, category: 'Cà phê pha máy', imageUrl: `${WEB}/menu/espresso.jpg` },
+  { name: 'Americano', price: 40000, category: 'Cà phê pha máy', imageUrl: `${WEB}/menu/amricano.jpg` },
+  { name: 'Cappuccino', price: 45000, category: 'Cà phê pha máy', imageUrl: `${WEB}/menu/capu.jpg` },
 ];
 
 interface IngredientSeed {
@@ -24,12 +29,8 @@ const INGREDIENTS: IngredientSeed[] = [
   { name: 'Cà phê hạt / bột', unit: 'g', stock: 30000, lowStockThreshold: 5000 },
   { name: 'Sữa đặc', unit: 'g', stock: 30000, lowStockThreshold: 5000 },
   { name: 'Sữa tươi thanh trùng', unit: 'ml', stock: 40000, lowStockThreshold: 10000 },
-  { name: 'Cốt trà đào', unit: 'g', stock: 15000, lowStockThreshold: 3000 },
-  { name: 'Siro đào', unit: 'ml', stock: 25000, lowStockThreshold: 5000 },
+  { name: 'Kem béo', unit: 'ml', stock: 20000, lowStockThreshold: 3000 },
   { name: 'Đường nước', unit: 'ml', stock: 30000, lowStockThreshold: 5000 },
-  { name: 'Trân châu đen', unit: 'g', stock: 15000, lowStockThreshold: 2000 },
-  { name: 'Kem béo', unit: 'ml', stock: 15000, lowStockThreshold: 2000 },
-  { name: 'Ly giấy kèm nắp', unit: 'pcs', stock: 2000, lowStockThreshold: 200 },
 ];
 
 // Định lượng từng size (S/M/L)
@@ -41,81 +42,96 @@ const RECIPES: Record<
     S: [
       { ingredient: 'Cà phê hạt / bột', amount: 20 },
       { ingredient: 'Sữa đặc', amount: 30 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
     M: [
       { ingredient: 'Cà phê hạt / bột', amount: 25 },
       { ingredient: 'Sữa đặc', amount: 40 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
     L: [
       { ingredient: 'Cà phê hạt / bột', amount: 30 },
       { ingredient: 'Sữa đặc', amount: 50 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
+    ],
+  },
+  'Cà phê đen': {
+    S: [
+      { ingredient: 'Cà phê hạt / bột', amount: 20 },
+      { ingredient: 'Đường nước', amount: 10 },
+    ],
+    M: [
+      { ingredient: 'Cà phê hạt / bột', amount: 25 },
+      { ingredient: 'Đường nước', amount: 15 },
+    ],
+    L: [
+      { ingredient: 'Cà phê hạt / bột', amount: 30 },
+      { ingredient: 'Đường nước', amount: 20 },
+    ],
+  },
+  'Bạc xỉu': {
+    S: [
+      { ingredient: 'Cà phê hạt / bột', amount: 15 },
+      { ingredient: 'Sữa đặc', amount: 35 },
+      { ingredient: 'Sữa tươi thanh trùng', amount: 60 },
+      { ingredient: 'Kem béo', amount: 10 },
+    ],
+    M: [
+      { ingredient: 'Cà phê hạt / bột', amount: 20 },
+      { ingredient: 'Sữa đặc', amount: 45 },
+      { ingredient: 'Sữa tươi thanh trùng', amount: 80 },
+      { ingredient: 'Kem béo', amount: 15 },
+    ],
+    L: [
+      { ingredient: 'Cà phê hạt / bột', amount: 25 },
+      { ingredient: 'Sữa đặc', amount: 55 },
+      { ingredient: 'Sữa tươi thanh trùng', amount: 100 },
+      { ingredient: 'Kem béo', amount: 20 },
+    ],
+  },
+  Espresso: {
+    S: [
+      { ingredient: 'Cà phê hạt / bột', amount: 18 },
+    ],
+    M: [
+      { ingredient: 'Cà phê hạt / bột', amount: 22 },
+    ],
+    L: [
+      { ingredient: 'Cà phê hạt / bột', amount: 28 },
     ],
   },
   Americano: {
     S: [
       { ingredient: 'Cà phê hạt / bột', amount: 18 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
     M: [
       { ingredient: 'Cà phê hạt / bột', amount: 22 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
     L: [
       { ingredient: 'Cà phê hạt / bột', amount: 28 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
   },
   Cappuccino: {
     S: [
       { ingredient: 'Cà phê hạt / bột', amount: 18 },
       { ingredient: 'Sữa tươi thanh trùng', amount: 120 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
     M: [
       { ingredient: 'Cà phê hạt / bột', amount: 22 },
       { ingredient: 'Sữa tươi thanh trùng', amount: 160 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
     L: [
       { ingredient: 'Cà phê hạt / bột', amount: 28 },
       { ingredient: 'Sữa tươi thanh trùng', amount: 220 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
-    ],
-  },
-  'Trà đào': {
-    S: [
-      { ingredient: 'Cốt trà đào', amount: 10 },
-      { ingredient: 'Siro đào', amount: 25 },
-      { ingredient: 'Đường nước', amount: 15 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
-    ],
-    M: [
-      { ingredient: 'Cốt trà đào', amount: 15 },
-      { ingredient: 'Siro đào', amount: 35 },
-      { ingredient: 'Đường nước', amount: 20 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
-    ],
-    L: [
-      { ingredient: 'Cốt trà đào', amount: 20 },
-      { ingredient: 'Siro đào', amount: 45 },
-      { ingredient: 'Đường nước', amount: 25 },
-      { ingredient: 'Ly giấy kèm nắp', amount: 1 },
     ],
   },
 };
 
 const TOPPING_RECIPES: Record<string, Array<{ ingredient: string; amount: number }>> = {
-  'Trân châu': [{ ingredient: 'Trân châu đen', amount: 30 }],
-  Kem: [{ ingredient: 'Kem béo', amount: 40 }],
+  'Đậm cafe': [{ ingredient: 'Cà phê hạt / bột', amount: 5 }],
 };
 
 export async function seedAll(client?: PrismaClient) {
   const db = client || prisma;
 
-  // 1. Sản phẩm menu (idempotent: duy trì chính xác 4 món đồ uống gốc)
+  // 1. Sản phẩm menu
   const legitimateNames = PRODUCTS.map((p) => p.name);
   for (const p of PRODUCTS) {
     const existing = await db.product.findFirst({ where: { name: p.name } });
@@ -124,7 +140,7 @@ export async function seedAll(client?: PrismaClient) {
     } else {
       await db.product.update({
         where: { id: existing.id },
-        data: { imageUrl: p.imageUrl, price: p.price, isActive: true },
+        data: { imageUrl: p.imageUrl, price: p.price, category: p.category, isActive: true },
       });
     }
   }
@@ -202,23 +218,27 @@ export async function seedAll(client?: PrismaClient) {
     }
   }
 
-  // Dọn dẹp an toàn các nguyên liệu không thuộc 9 nguyên liệu gốc (chỉ khi không có liên kết hợp lệ)
+  // Dọn dẹp an toàn các nguyên liệu không thuộc danh sách nguyên liệu chuẩn
+  await db.recipeItem.deleteMany({
+    where: { ingredient: { name: { notIn: legitimateIngredientNames } } },
+  });
+  await db.toppingRecipe.deleteMany({
+    where: {
+      OR: [
+        { ingredient: { name: { notIn: legitimateIngredientNames } } },
+        { toppingName: { notIn: Object.keys(TOPPING_RECIPES) } },
+      ],
+    },
+  });
+
   const extraIngredients = await db.ingredient.findMany({
     where: { name: { notIn: legitimateIngredientNames } },
   });
   for (const extra of extraIngredients) {
-    const legitRecipeCount = await db.recipeItem.count({
-      where: { ingredientId: extra.id, product: { name: { in: legitimateNames } } },
-    });
-    const legitToppingCount = await db.toppingRecipe.count({
-      where: { ingredientId: extra.id },
-    });
-    if (legitRecipeCount === 0 && legitToppingCount === 0) {
-      await db.orderIngredientReservation.deleteMany({ where: { ingredientId: extra.id } });
-      await db.recipeItem.deleteMany({ where: { ingredientId: extra.id } });
-      await db.inventoryMovement.deleteMany({ where: { ingredientId: extra.id } });
-      await db.ingredient.delete({ where: { id: extra.id } });
-    }
+    await db.orderIngredientReservation.deleteMany({ where: { ingredientId: extra.id } });
+    await db.recipeItem.deleteMany({ where: { ingredientId: extra.id } });
+    await db.inventoryMovement.deleteMany({ where: { ingredientId: extra.id } });
+    await db.ingredient.delete({ where: { id: extra.id } });
   }
 
   // 5. Khởi tạo công thức món (Recipe items cho 4 thức uống gốc)

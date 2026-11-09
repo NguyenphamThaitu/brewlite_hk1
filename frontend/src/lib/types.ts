@@ -3,6 +3,7 @@ export type Product = {
   name: string;
   price: number;
   imageUrl: string;
+  category?: string;
   stock: number;
 };
 
@@ -91,4 +92,60 @@ export type VariantAvailability = {
   isolatedAvailableCups: number;
   limitingIngredient?: string;
   note: string;
+};
+
+export type AdminProduct = {
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
+  category?: string;
+  stock: number;
+  isActive: boolean;
+  recipeItems?: RecipeItemView[];
+};
+
+export type PromotionItem = {
+  code: string;
+  percent: number;
+  active: boolean;
+  minOrderValue: number;
+  usageLimit: number | null;
+  usedCount: number;
+  startDate: string | null;
+  endDate: string | null;
+  createdAt: string;
+};
+
+export type RevenueReport = {
+  date: string;
+  startDate: string;
+  endDate: string;
+  timezone: string;
+  summary: {
+    totalRevenue: number;
+    grossRevenue?: number;
+    totalDiscount: number;
+    totalOrders: number;
+    successfulOrders: number;
+    cancelledOrders: number;
+    failedOrders: number;
+    averageOrderValue: number;
+  };
+  topSellingProducts: Array<{
+    id: number;
+    name: string;
+    totalQty: number;
+    totalSales: number;
+  }>;
+  recentOrders: Array<{
+    id: number;
+    total: number;
+    originalTotal?: number;
+    discount: number;
+    promoCode?: string;
+    status: string;
+    itemCount: number;
+    createdAt: string;
+  }>;
 };

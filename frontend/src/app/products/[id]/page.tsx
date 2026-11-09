@@ -23,6 +23,7 @@ export default function ProductDetail() {
     // Kiểm tra khả năng pha chế theo tồn kho nguyên liệu thời gian thực
     const { data: availability, isLoading: isCheckingAvailability } = useQuery({
         queryKey: ['product-availability', id, size, toppings.sort().join(',')],
+        retry: false,
         queryFn: () =>
             api<VariantAvailability>(
                 `/inventory/product-availability/${id}?size=${size}&toppings=${encodeURIComponent(toppings.join(','))}`,
@@ -85,10 +86,10 @@ export default function ProductDetail() {
                 </div>
             </div>
 
-            {/* Chọn Topping */}
+            {/* Tùy chọn Custom */}
             <div>
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    Thêm topping:
+                    Custom:
                 </label>
                 <div className="flex flex-wrap gap-4">
                     {Object.keys(TOPPING_PRICE).map((t) => (
@@ -100,7 +101,7 @@ export default function ProductDetail() {
                                 onChange={() => toggle(t)}
                             />
                             <span>
-                                {t} (+{vnd(TOPPING_PRICE[t])})
+                                + {t} (+{vnd(TOPPING_PRICE[t])})
                             </span>
                         </label>
                     ))}

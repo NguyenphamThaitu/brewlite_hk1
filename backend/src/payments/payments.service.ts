@@ -114,6 +114,14 @@ export class PaymentsService {
           // Tiêu hao nguyên liệu đã giữ chỗ chính xác 1 lần
           await this.inventoryService.consumeOrderReservationsTx(tx, order.id);
 
+          // Cập nhật lượt dùng khuyến mãi nếu đơn có dùng mã
+          if (order.promoCode) {
+            await tx.promotion.updateMany({
+              where: { code: order.promoCode },
+              data: { usedCount: { increment: 1 } },
+            });
+          }
+
           // Điểm thưởng: 1 điểm / 10.000đ, cộng 1 lần khi thanh toán thành công
           await tx.user.update({
             where: { id: userId },

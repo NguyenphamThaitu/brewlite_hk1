@@ -17,6 +17,15 @@ const normalizeText = (text: string): string => {
       .trim();
 };
 
+const PRODUCT_ORDER = [
+  'Cà phê sữa',
+  'Cà phê đen',
+  'Bạc xỉu',
+  'Espresso',
+  'Americano',
+  'Cappuccino',
+];
+
 export default function MenuPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -35,11 +44,18 @@ export default function MenuPage() {
     return <p>Chưa có sản phẩm nào.</p>;
   }
 
-  // Lọc món ngay trên trình duyệt, không cần gọi thêm API
+  // Lọc món ngay trên trình duyệt và sắp xếp theo 3 món trên, 3 món dưới
   const normalizedSearch = normalizeText(searchTerm);
-  const filteredProducts = data.filter((product) =>
-      normalizeText(product.name).includes(normalizedSearch),
-  );
+  const filteredProducts = data
+    .filter((product) => normalizeText(product.name).includes(normalizedSearch))
+    .sort((a, b) => {
+      const ia = PRODUCT_ORDER.indexOf(a.name);
+      const ib = PRODUCT_ORDER.indexOf(b.name);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+      return 0;
+    });
 
   return (
       <div>
@@ -72,13 +88,13 @@ export default function MenuPage() {
           )}
         </div>
 
-        {/* Kết quả */}
+        {/* Kết quả (6 món chia 3 trên 3 dưới) */}
         {filteredProducts.length === 0 ? (
             <p className="py-6 text-center text-gray-500">
               Không tìm thấy món nào phù hợp với “{searchTerm}”.
             </p>
         ) : (
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
               {filteredProducts.map((p) => (
                   <Link
                       key={p.id}

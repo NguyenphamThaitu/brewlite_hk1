@@ -184,9 +184,19 @@ export class InventoryCalculationService {
     limitingIngredient?: string;
     note: string;
   }> {
-    const singleCupRequirement = await this.aggregateRequirements([
-      { productId, size, toppings, qty: 1 },
-    ]);
+    let singleCupRequirement: Map<number, number>;
+    try {
+      singleCupRequirement = await this.aggregateRequirements([
+        { productId, size, toppings, qty: 1 },
+      ]);
+    } catch {
+      return {
+        available: false,
+        isolatedAvailableCups: 0,
+        limitingIngredient: 'Chưa cấu hình công thức',
+        note: 'Món này chưa có công thức định lượng trong kho',
+      };
+    }
 
     const ingredientIds = Array.from(singleCupRequirement.keys());
     const ingredients = await this.prisma.ingredient.findMany({

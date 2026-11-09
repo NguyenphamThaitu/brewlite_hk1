@@ -172,10 +172,6 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
           where: { name: 'Sữa đặc' },
           data: { stock: 30000, reservedQty: 0 },
         });
-        await prisma.ingredient.updateMany({
-          where: { name: 'Ly giấy kèm nắp' },
-          data: { stock: 2000, reservedQty: 0 },
-        });
       }
     } finally {
       if (app) await app.close();
@@ -208,7 +204,7 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
       const res = await http().get('/inventory/ingredients').set(adminAuth());
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBeGreaterThanOrEqual(9);
+      expect(res.body.length).toBeGreaterThanOrEqual(5);
     });
 
     it('Không cho phép người dùng xem kết quả thanh toán của người khác bằng Idempotency-Key', async () => {
@@ -246,9 +242,9 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
   });
 
   describe('2. Dự báo cơ cấu bán hàng (Sales Mix Forecast)', () => {
-    it('Tính toán chính xác tổng định lượng cho 500 ly Cà phê sữa M và 500 ly Trà đào M', async () => {
+    it('Tính toán chính xác tổng định lượng cho 500 ly Cà phê sữa M và 500 ly Americano M', async () => {
       const cfSua = await prisma.product.findFirstOrThrow({ where: { name: 'Cà phê sữa' } });
-      const traDao = await prisma.product.findFirstOrThrow({ where: { name: 'Trà đào' } });
+      const americano = await prisma.product.findFirstOrThrow({ where: { name: 'Americano' } });
 
       const res = await http()
         .post('/inventory/forecast')
@@ -256,7 +252,7 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
         .send({
           items: [
             { productId: cfSua.id, size: 'M', qty: 500 },
-            { productId: traDao.id, size: 'M', qty: 500 },
+            { productId: americano.id, size: 'M', qty: 500 },
           ],
         });
 
@@ -265,15 +261,12 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
 
       const byName = new Map<string, any>(ingredients.map((i: any) => [i.ingredientName, i]));
 
-      // 500 ly Cà phê sữa M: Cà phê (500*25=12,500g), Sữa đặc (500*40=20,000g), Ly giấy (500*1=500)
-      // 500 ly Trà đào M: Cốt trà (500*15=7,500g), Siro đào (500*35=17,500ml), Đường nước (500*20=10,000ml), Ly giấy (500*1=500)
-      // Tổng Ly giấy (dùng chung): 500 + 500 = 1,000 pcs
-      expect(byName.get('Cà phê hạt / bột')?.required).toBe(12500);
+      // 500 ly Cà phê sữa M: Cà phê (500*25=12,500g), Sữa đặc (500*40=20,000g)
+      // 500 ly Americano M: Cà phê (500*22=11,000g)
+      // Tổng Cà phê hạt / bột: 12,500 + 11,000 = 23,500g
+      // Tổng Sữa đặc: 20,000g
+      expect(byName.get('Cà phê hạt / bột')?.required).toBe(23500);
       expect(byName.get('Sữa đặc')?.required).toBe(20000);
-      expect(byName.get('Cốt trà đào')?.required).toBe(7500);
-      expect(byName.get('Siro đào')?.required).toBe(17500);
-      expect(byName.get('Đường nước')?.required).toBe(10000);
-      expect(byName.get('Ly giấy kèm nắp')?.required).toBe(1000);
 
       expect(typeof canFulfillAll).toBe('boolean');
     });
@@ -303,10 +296,11 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
       }
     });
 
-    it('Tính đúng định lượng khi có topping và khác biệt size S/M/L', async () => {
+    it('Tính đúng định lượng khi có tùy chọn custom và khác biệt size S/M/L', async () => {
       const cfSua = await prisma.product.findFirstOrThrow({ where: { name: 'Cà phê sữa' } });
-      // 1 ly Cà phê sữa S + Trân châu (30g) + Kem (40ml)
-      // Cà phê sữa S: Cà phê (20g), Sữa đặc (30g), Ly giấy (1)
+      // 1 ly Cà phê sữa S (Cà phê 20g, Sữa đặc 30g) + Đậm cafe (Cà phê 5g)
+      // Tổng Cà phê hạt / bột: 20 + 5 = 25g
+      // Tổng Sữa đặc: 30g
       const res = await http()
         .post('/inventory/forecast')
         .set(adminAuth())
@@ -315,7 +309,7 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
             {
               productId: cfSua.id,
               size: 'S',
-              toppings: ['Trân châu', 'Kem'],
+              toppings: ['Đậm cafe'],
               qty: 1,
             },
           ],
@@ -323,11 +317,8 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
 
       expect(res.status).toBe(201);
       const byName = new Map<string, any>(res.body.ingredients.map((i: any) => [i.ingredientName, i]));
-      expect(byName.get('Cà phê hạt / bột')?.required).toBe(20);
+      expect(byName.get('Cà phê hạt / bột')?.required).toBe(25);
       expect(byName.get('Sữa đặc')?.required).toBe(30);
-      expect(byName.get('Trân châu đen')?.required).toBe(30);
-      expect(byName.get('Kem béo')?.required).toBe(40);
-      expect(byName.get('Ly giấy kèm nắp')?.required).toBe(1);
     });
 
     it('Từ chối tính toán nếu biến thể đồ uống chưa cấu hình công thức', async () => {
@@ -648,7 +639,6 @@ describe('Ingredient Inventory System (Comprehensive E2E)', () => {
           size: 'S',
           ingredients: [
             { ingredientId: coffeeIng.id, amount: 18 },
-            { ingredientId: (await prisma.ingredient.findFirstOrThrow({ where: { name: 'Ly giấy kèm nắp' } })).id, amount: 1 },
           ],
         });
     });

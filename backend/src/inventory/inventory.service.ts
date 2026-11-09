@@ -10,6 +10,7 @@ import { MovementType, OrderStatus, Prisma, ReservationStatus } from '@prisma/cl
 import { PrismaService } from '../prisma/prisma.service';
 import { StockInDto } from './dto/stock-in.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
+import { CreateIngredientDto } from './inventory.controller';
 import {
   UpdateProductSizeRecipeDto,
   UpdateToppingRecipeDto,
@@ -59,6 +60,76 @@ export class InventoryService implements OnModuleInit {
         isLowStock,
         version: ing.version,
       };
+    });
+  }
+
+  /**
+   * Thêm nguyên liệu mới vào kho
+   */
+  async createIngredient(dto: CreateIngredientDto) {
+    const trimmedName = dto.name.trim();
+    const existing = await this.prisma.ingredient.findUnique({
+      where: { name: trimmedName },
+    });
+    if (existing) {
+      throw new BadRequestException(`Nguyên liệu "${trimmedName}" đã tồn tại trong kho`);
+    }
+
+    const initialStock = dto.initialStock ?? 0;
+    const threshold = dto.lowStockThreshold ?? 0;
+
+    return this.prisma.$transaction(async (tx) => {
+      const ing = await tx.ingredient.create({
+        data: {
+          name: trimmedName,
+          unit: dto.unit.trim(),
+          stock: initialStock,
+          reservedQty: 0,
+          lowStockThreshold: threshold,
+        },
+      });
+
+      if (initialStock > 0) {
+        await tx.inventoryMovement.create({
+          data: {
+            ingredientId: ing.id,
+            type: MovementType.STOCK_IN,
+            quantity: initialStock,
+            balanceAfter: initialStock,
+            reason: 'Khởi tạo nguyên liệu mới vào kho',
+          },
+        });
+      }
+
+      return {
+        id: ing.id,
+        name: ing.name,
+        unit: ing.unit,
+        stock: Number(ing.stock),
+        reservedQty: Number(ing.reservedQty),
+        availableQty: Math.max(0, Number(ing.stock) - Number(ing.reservedQty)),
+        lowStockThreshold: Number(ing.lowStockThreshold),
+        isLowStock: Number(ing.stock) <= Number(ing.lowStockThreshold),
+        version: ing.version,
+      };
+    });
+  }
+
+  /**
+   * Xóa nguyên liệu khỏi kho
+   */
+  async deleteIngredient(id: number) {
+    const existing = await this.prisma.ingredient.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Không tìm thấy nguyên liệu #${id}`);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.recipeItem.deleteMany({ where: { ingredientId: id } });
+      await tx.toppingRecipe.deleteMany({ where: { ingredientId: id } });
+      await tx.orderIngredientReservation.deleteMany({ where: { ingredientId: id } });
+      await tx.inventoryMovement.deleteMany({ where: { ingredientId: id } });
+      return tx.ingredient.delete({ where: { id } });
     });
   }
 

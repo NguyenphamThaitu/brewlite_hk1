@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -18,6 +19,27 @@ import { InventoryCalculationService } from './inventory-calculation.service';
 import { ForecastSalesMixDto } from './dto/forecast.dto';
 import { StockInDto } from './dto/stock-in.dto';
 import { AdjustStockDto } from './dto/adjust-stock.dto';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+
+export class CreateIngredientDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  unit: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  initialStock?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  lowStockThreshold?: number;
+}
 import {
   UpdateProductSizeRecipeDto,
   UpdateToppingRecipeDto,
@@ -49,6 +71,26 @@ export class InventoryController {
   @Get('ingredients')
   findAllIngredients() {
     return this.inventoryService.findAllIngredients();
+  }
+
+  /**
+   * Thêm nguyên liệu mới vào kho
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('ingredients')
+  createIngredient(@Body() dto: CreateIngredientDto) {
+    return this.inventoryService.createIngredient(dto);
+  }
+
+  /**
+   * Xóa nguyên liệu khỏi kho
+   */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete('ingredients/:id')
+  deleteIngredient(@Param('id', ParseIntPipe) id: number) {
+    return this.inventoryService.deleteIngredient(id);
   }
 
   /**

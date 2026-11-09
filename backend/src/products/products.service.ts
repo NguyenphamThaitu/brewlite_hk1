@@ -13,6 +13,7 @@ export class ProductsService {
         name: true,
         price: true,
         imageUrl: true,
+        category: true,
         stock: true,
       },
       orderBy: { id: 'asc' },

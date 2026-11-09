@@ -50,6 +50,7 @@ model Product {
   name        String
   price       Int
   imageUrl    String
+  category    String       @default("Coffee")
   stock       Int          @default(100)
   version     Int          @default(0)
   isActive    Boolean      @default(true)
@@ -57,6 +58,7 @@ model Product {
   recipeItems RecipeItem[]
 
   @@index([isActive])
+  @@index([category])
 }
 
 model User {
@@ -109,9 +111,16 @@ model Payment {
 }
 
 model Promotion {
-  code    String  @id
-  percent Int
-  active  Boolean @default(true)
+  code          String    @id
+  percent       Int
+  active        Boolean   @default(true)
+  minOrderValue Int       @default(0)
+  usageLimit    Int?
+  usedCount     Int       @default(0)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 }
 
 model Ingredient {

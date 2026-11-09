@@ -54,8 +54,25 @@ export class OrdersService {
         where: { code: dto.promoCode.toUpperCase() },
       });
       if (!promo || !promo.active) {
-        throw new BadRequestException('Mã khuyến mãi không hợp lệ');
+        throw new BadRequestException('Mã khuyến mãi không tồn tại hoặc đã ngừng áp dụng');
       }
+
+      const now = new Date();
+      if (promo.startDate && now < promo.startDate) {
+        throw new BadRequestException('Mã khuyến mãi chưa đến thời gian sử dụng');
+      }
+      if (promo.endDate && now > promo.endDate) {
+        throw new BadRequestException('Mã khuyến mãi đã hết hạn sử dụng');
+      }
+      if (promo.usageLimit !== null && promo.usedCount >= promo.usageLimit) {
+        throw new BadRequestException('Mã khuyến mãi đã hết lượt sử dụng');
+      }
+      if (promo.minOrderValue > 0 && subtotal < promo.minOrderValue) {
+        throw new BadRequestException(
+          `Đơn hàng chưa đạt giá trị tối thiểu ${promo.minOrderValue.toLocaleString('vi-VN')}đ để dùng mã này`,
+        );
+      }
+
       discount = Math.floor((subtotal * promo.percent) / 100);
       promoCode = promo.code;
     }

@@ -26,9 +26,14 @@ export default function Header() {
                     {hydrated && user ? (
                         <>
                             {user.role === 'ADMIN' && (
-                                <Link href="/admin/inventory" className="rounded bg-[#c4956a] px-3 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#a97b52]">
-                                    Quản lý kho
-                                </Link>
+                                <>
+                                    <Link href="/admin/inventory" className="rounded bg-[#c4956a] px-3 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#a97b52]">
+                                        Quản lý kho
+                                    </Link>
+                                    <Link href="/admin/revenue" className="rounded bg-[#0f3a52] border border-[#c4956a] px-3 py-2 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#1a4f6e]">
+                                        Doanh thu & Khuyến mãi
+                                    </Link>
+                                </>
                             )}
                             <Link href="/orders" className={link}>Đơn của tôi</Link>
                             <button onClick={logout} className={link}>Đăng xuất</button>

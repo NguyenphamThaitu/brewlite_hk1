@@ -21,6 +21,15 @@ export default function AdminInventoryPage() {
 
     const [activeTab, setActiveTab] = useState<Tab>('inventory');
 
+    // State cho Thêm nguyên liệu mới (Create Ingredient)
+    const [createIngModal, setCreateIngModal] = useState(false);
+    const [newIngName, setNewIngName] = useState('');
+    const [newIngUnit, setNewIngUnit] = useState('g');
+    const [newIngInitialStock, setNewIngInitialStock] = useState<number>(1000);
+    const [newIngThreshold, setNewIngThreshold] = useState<number>(200);
+    const [createIngLoading, setCreateIngLoading] = useState(false);
+    const [createIngMsg, setCreateIngMsg] = useState<{ text: string; isError?: boolean } | null>(null);
+
     // State cho Nhập kho (Stock In)
     const [stockInModal, setStockInModal] = useState(false);
     const [stockInIngredientId, setStockInIngredientId] = useState<number>(1);
@@ -51,8 +60,6 @@ export default function AdminInventoryPage() {
     const [editLoading, setEditLoading] = useState(false);
     const [editMsg, setEditMsg] = useState<{ text: string; isError?: boolean } | null>(null);
 
-
-
     // State cho Báo cáo ngày
     const [reportDate, setReportDate] = useState(() => {
         const now = new Date();
@@ -71,9 +78,7 @@ export default function AdminInventoryPage() {
         queryFn: () => api<Ingredient[]>('/inventory/ingredients', { token: token! }),
     });
 
-
-
-    // 3. Tải báo cáo ngày
+    // 2. Tải báo cáo ngày
     const {
         data: dailyReport,
         isLoading: loadingReport,
@@ -86,7 +91,7 @@ export default function AdminInventoryPage() {
             }),
     });
 
-    // 4. Tải công thức món và topping
+    // 3. Tải công thức món và topping
     const {
         data: allRecipes,
         isLoading: loadingRecipes,
@@ -126,6 +131,52 @@ export default function AdminInventoryPage() {
                 </p>
             </div>
         );
+    }
+
+    // Xử lý nộp form Thêm nguyên liệu mới
+    async function handleCreateIngredient(e: React.FormEvent) {
+        e.preventDefault();
+        setCreateIngLoading(true);
+        setCreateIngMsg(null);
+        try {
+            await api('/inventory/ingredients', {
+                method: 'POST',
+                token: token!,
+                body: JSON.stringify({
+                    name: newIngName.trim(),
+                    unit: newIngUnit.trim(),
+                    initialStock: Number(newIngInitialStock),
+                    lowStockThreshold: Number(newIngThreshold),
+                }),
+            });
+            setCreateIngMsg({ text: 'Thêm nguyên liệu mới vào kho thành công!' });
+            await refetchIngredients();
+            setTimeout(() => {
+                setCreateIngModal(false);
+                setCreateIngMsg(null);
+                setNewIngName('');
+                setNewIngInitialStock(1000);
+                setNewIngThreshold(200);
+            }, 1000);
+        } catch (err) {
+            setCreateIngMsg({ text: (err as Error).message, isError: true });
+        } finally {
+            setCreateIngLoading(false);
+        }
+    }
+
+    // Xử lý Xóa nguyên liệu khỏi kho
+    async function handleDeleteIngredient(id: number, name: string) {
+        if (!confirm(`Bạn có chắc muốn xóa nguyên liệu "${name}" khỏi kho không?`)) return;
+        try {
+            await api(`/inventory/ingredients/${id}`, {
+                method: 'DELETE',
+                token: token!,
+            });
+            await refetchIngredients();
+        } catch (err) {
+            alert((err as Error).message);
+        }
     }
 
     // Xử lý nộp form Nhập kho
@@ -211,7 +262,7 @@ export default function AdminInventoryPage() {
     // Mở modal sửa công thức tập trung
     function openEditRecipeModal() {
         const firstProd = allRecipes?.products?.[0];
-        const initialKey = firstProd ? `prod-${firstProd.id}` : 'prod-3';
+        const initialKey = firstProd ? `prod-${firstProd.id}` : 'prod-1';
         const initialSize = 'M';
         setSelectedTargetKey(initialKey);
         setSelectedSize(initialSize);
@@ -233,92 +284,65 @@ export default function AdminInventoryPage() {
     }
 
     function handleAddIngredientRow() {
+        if (!ingredients || ingredients.length === 0) return;
         const usedIds = new Set(editItems.map((i) => i.ingredientId));
-        const nextIng = ingredients?.find((i) => !usedIds.has(i.id)) || ingredients?.[0];
-        if (nextIng) {
-            setEditItems([...editItems, { ingredientId: nextIng.id, amount: 10 }]);
-        }
+        const unused = ingredients.find((i) => !usedIds.has(i.id)) || ingredients[0];
+        setEditItems([...editItems, { ingredientId: unused.id, amount: 10 }]);
     }
 
     function handleRemoveIngredientRow(index: number) {
-        if (editItems.length <= 1) {
-            setEditMsg({ text: 'Công thức cần có ít nhất 1 nguyên liệu.', isError: true });
-            return;
-        }
+        if (editItems.length <= 1) return;
         setEditItems(editItems.filter((_, idx) => idx !== index));
     }
 
     function handleUpdateItem(index: number, field: 'ingredientId' | 'amount', value: number) {
         setEditItems(
-            editItems.map((item, idx) => {
-                if (idx !== index) return item;
-                return { ...item, [field]: value };
-            }),
+            editItems.map((it, idx) => (idx === index ? { ...it, [field]: value } : it)),
         );
     }
 
     async function handleSaveRecipe(e: React.FormEvent) {
         e.preventDefault();
-        if (!token) return;
-
-        if (editItems.length === 0) {
-            setEditMsg({ text: 'Công thức cần có ít nhất 1 nguyên liệu.', isError: true });
-            return;
-        }
-
-        const duplicateCheck = new Set<number>();
-        for (const item of editItems) {
-            if (item.amount <= 0 || isNaN(item.amount)) {
-                setEditMsg({ text: 'Định lượng của mỗi nguyên liệu phải lớn hơn 0.', isError: true });
-                return;
-            }
-            if (duplicateCheck.has(item.ingredientId)) {
-                setEditMsg({ text: 'Không được chọn trùng nguyên liệu trong cùng một công thức.', isError: true });
-                return;
-            }
-            duplicateCheck.add(item.ingredientId);
-        }
-
         setEditLoading(true);
         setEditMsg(null);
 
         try {
             if (selectedTargetKey.startsWith('prod-')) {
-                const prodId = Number(selectedTargetKey.replace('prod-', ''));
+                const productId = Number(selectedTargetKey.replace('prod-', ''));
                 await api('/inventory/recipes/product', {
                     method: 'PUT',
-                    token,
+                    token: token!,
                     body: JSON.stringify({
-                        productId: prodId,
+                        productId,
                         size: selectedSize,
                         ingredients: editItems.map((it) => ({
-                            ingredientId: it.ingredientId,
+                            ingredientId: Number(it.ingredientId),
                             amount: Number(it.amount),
                         })),
                     }),
                 });
-            } else {
+            } else if (selectedTargetKey.startsWith('top-')) {
                 const toppingName = selectedTargetKey.replace('top-', '');
                 await api('/inventory/recipes/topping', {
                     method: 'PUT',
-                    token,
+                    token: token!,
                     body: JSON.stringify({
                         toppingName,
                         ingredients: editItems.map((it) => ({
-                            ingredientId: it.ingredientId,
+                            ingredientId: Number(it.ingredientId),
                             amount: Number(it.amount),
                         })),
                     }),
                 });
             }
 
-            setEditMsg({ text: 'Đã cập nhật công thức thành công!' });
+            setEditMsg({ text: 'Cập nhật công thức thành công!' });
+            await queryClient.invalidateQueries({ queryKey: ['admin-recipes'] });
             await refetchRecipes();
-            queryClient.invalidateQueries({ queryKey: ['product-availability'] });
             setTimeout(() => {
                 setEditRecipeModal(false);
                 setEditMsg(null);
-            }, 800);
+            }, 1000);
         } catch (err) {
             setEditMsg({ text: (err as Error).message, isError: true });
         } finally {
@@ -328,39 +352,49 @@ export default function AdminInventoryPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between border-b border-gray-300 pb-4">
+            {/* Header & Thanh nút thao tác */}
+            <div className="flex flex-wrap items-center justify-between border-b border-gray-200 pb-4 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold uppercase tracking-wide text-[#0f3a52]">
-                        Hệ thống Quản lý Tồn kho & Định lượng
+                    <h1 className="text-2xl font-bold tracking-tight text-[#0f3a52]">
+                        Hệ thống Quản lý Kho & Định lượng
                     </h1>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        onClick={() => {
+                            setCreateIngModal(true);
+                            setCreateIngMsg(null);
+                        }}
+                        className="rounded bg-[#0f3a52] px-3.5 py-2 text-xs font-bold uppercase text-white hover:bg-[#1a4f6e] transition"
+                    >
+                        Thêm nguyên liệu
+                    </button>
                     <button
                         onClick={() => {
                             setStockInModal(true);
                             setStockInMsg(null);
                         }}
-                        className="rounded bg-[#0f3a52] px-3 py-1.5 text-xs font-semibold uppercase text-white hover:bg-[#1a4f6e]"
+                        className="rounded bg-[#0f3a52] px-3.5 py-2 text-xs font-bold uppercase text-white hover:bg-[#1a4f6e] transition"
                     >
-                        + Nhập kho
+                        Nhập kho
                     </button>
                     <button
                         onClick={() => {
                             setAdjustModal(true);
                             setAdjustMsg(null);
                         }}
-                        className="rounded bg-[#c4956a] px-3 py-1.5 text-xs font-semibold uppercase text-white hover:bg-[#a97b52]"
+                        className="rounded bg-[#c4956a] px-3.5 py-2 text-xs font-bold uppercase text-white hover:bg-[#a97b52] transition"
                     >
-                        ± Kiểm kê điều chỉnh
+                        Kiểm kê điều chỉnh
                     </button>
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex border-b border-gray-200">
+            {/* Navigation Tabs (No emojis) */}
+            <div className="flex flex-wrap border-b border-gray-200 gap-1">
                 <button
                     onClick={() => setActiveTab('inventory')}
-                    className={`border-b-2 px-5 py-2.5 font-semibold transition ${activeTab === 'inventory'
+                    className={`border-b-2 px-5 py-2.5 text-sm font-semibold transition ${activeTab === 'inventory'
                         ? 'border-[#0f3a52] text-[#0f3a52]'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
@@ -370,16 +404,17 @@ export default function AdminInventoryPage() {
 
                 <button
                     onClick={() => setActiveTab('report')}
-                    className={`border-b-2 px-5 py-2.5 font-semibold transition ${activeTab === 'report'
+                    className={`border-b-2 px-5 py-2.5 text-sm font-semibold transition ${activeTab === 'report'
                         ? 'border-[#0f3a52] text-[#0f3a52]'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                 >
-                    Báo cáo ngày (UTC+7)
+                    Báo cáo xuất - nhập - tồn
                 </button>
+
                 <button
                     onClick={() => setActiveTab('recipes')}
-                    className={`border-b-2 px-5 py-2.5 font-semibold transition ${activeTab === 'recipes'
+                    className={`border-b-2 px-5 py-2.5 text-sm font-semibold transition ${activeTab === 'recipes'
                         ? 'border-[#0f3a52] text-[#0f3a52]'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
@@ -398,7 +433,7 @@ export default function AdminInventoryPage() {
                             <table className="w-full text-left text-sm">
                                 <thead className="border-b bg-gray-50 text-xs font-semibold uppercase text-gray-700">
                                     <tr>
-                                        <th className="p-3">Mã</th>
+                                        <th className="p-3 text-center w-16">STT</th>
                                         <th className="p-3">Nguyên liệu</th>
                                         <th className="p-3">Đơn vị</th>
                                         <th className="p-3 text-right">Tồn thực tế</th>
@@ -406,12 +441,13 @@ export default function AdminInventoryPage() {
                                         <th className="p-3 text-right">Khả dụng</th>
                                         <th className="p-3 text-right">Ngưỡng cảnh báo</th>
                                         <th className="p-3 text-center">Trạng thái</th>
+                                        <th className="p-3 text-center w-20">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y">
-                                    {ingredients?.map((ing) => (
+                                    {ingredients?.map((ing, idx) => (
                                         <tr key={ing.id} className="hover:bg-gray-50/50">
-                                            <td className="p-3 font-mono text-xs text-gray-500">#{ing.id}</td>
+                                            <td className="p-3 text-center font-mono text-xs text-gray-500">{idx + 1}</td>
                                             <td className="p-3 font-semibold text-[#0f3a52]">{ing.name}</td>
                                             <td className="p-3 font-mono text-xs text-gray-600">{ing.unit}</td>
                                             <td className="p-3 text-right font-medium">{ing.stock.toLocaleString('vi-VN')}</td>
@@ -429,6 +465,14 @@ export default function AdminInventoryPage() {
                                                     </span>
                                                 )}
                                             </td>
+                                            <td className="p-3 text-center">
+                                                <button
+                                                    onClick={() => handleDeleteIngredient(ing.id, ing.name)}
+                                                    className="rounded px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-800 transition"
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -438,9 +482,7 @@ export default function AdminInventoryPage() {
                 </div>
             )}
 
-
-
-            {/* TAB 3: BÁO CÁO NGÀY */}
+            {/* TAB 2: BÁO CÁO NGÀY */}
             {activeTab === 'report' && (
                 <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
@@ -502,15 +544,18 @@ export default function AdminInventoryPage() {
                 </div>
             )}
 
-            {/* TAB 4: QUẢN LÝ CÔNG THỨC */}
+            {/* TAB 3: QUẢN LÝ CÔNG THỨC */}
             {activeTab === 'recipes' && (
                 <div className="space-y-6">
-                    <div className="flex justify-end">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-bold text-[#0f3a52]">Định lượng Công thức</h2>
+                        </div>
                         <button
                             onClick={openEditRecipeModal}
-                            className="inline-flex items-center gap-1.5 rounded bg-[#0f3a52] px-4 py-2 text-xs font-bold uppercase text-white shadow hover:bg-[#1a4f6e] transition"
+                            className="rounded bg-[#0f3a52] px-4 py-2 text-xs font-bold uppercase text-white shadow hover:bg-[#1a4f6e] transition"
                         >
-                            ✏️ Chỉnh sửa công thức
+                            Chỉnh sửa công thức
                         </button>
                     </div>
 
@@ -565,6 +610,104 @@ export default function AdminInventoryPage() {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* MODAL: THÊM NGUYÊN LIỆU MỚI */}
+            {createIngModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl space-y-4">
+                        <div className="flex items-center justify-between border-b pb-2">
+                            <h3 className="text-lg font-bold text-[#0f3a52]">Thêm nguyên liệu mới vào kho</h3>
+                            <button onClick={() => setCreateIngModal(false)} className="text-gray-400 hover:text-gray-600">
+                                ✕
+                            </button>
+                        </div>
+                        <form onSubmit={handleCreateIngredient} className="space-y-3 text-sm">
+                            <div>
+                                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                                    Tên nguyên liệu (*):
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="VD: Bột Matcha, Siro Bạc Hà, Trà Oolong"
+                                    value={newIngName}
+                                    onChange={(e) => setNewIngName(e.target.value)}
+                                    className="w-full rounded border border-gray-300 p-2 outline-none focus:border-[#c4956a]"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                                    Đơn vị tính:
+                                </label>
+                                <select
+                                    value={newIngUnit}
+                                    onChange={(e) => setNewIngUnit(e.target.value)}
+                                    className="w-full rounded border border-gray-300 p-2 outline-none focus:border-[#c4956a]"
+                                >
+                                    <option value="g">Gram (g)</option>
+                                    <option value="ml">Mililit (ml)</option>
+                                    <option value="pcs">Cái / Ly / Nắp (pcs)</option>
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                                        Tồn kho ban đầu:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="any"
+                                        required
+                                        value={newIngInitialStock}
+                                        onChange={(e) => setNewIngInitialStock(Number(e.target.value))}
+                                        className="w-full rounded border border-gray-300 p-2 outline-none font-mono focus:border-[#c4956a]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                                        Ngưỡng cảnh báo:
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step="any"
+                                        required
+                                        value={newIngThreshold}
+                                        onChange={(e) => setNewIngThreshold(Number(e.target.value))}
+                                        className="w-full rounded border border-gray-300 p-2 outline-none font-mono focus:border-[#c4956a]"
+                                    />
+                                </div>
+                            </div>
+
+                            {createIngMsg && (
+                                <p className={`text-xs font-semibold ${createIngMsg.isError ? 'text-red-600' : 'text-green-600'}`}>
+                                    {createIngMsg.text}
+                                </p>
+                            )}
+
+                            <div className="flex justify-end gap-2 pt-2 border-t">
+                                <button
+                                    type="button"
+                                    onClick={() => setCreateIngModal(false)}
+                                    className="rounded border px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={createIngLoading}
+                                    className="rounded bg-[#0f3a52] px-4 py-2 text-xs font-bold text-white hover:bg-[#1a4f6e] disabled:opacity-50 transition"
+                                >
+                                    {createIngLoading ? 'Đang lưu...' : 'Thêm nguyên liệu'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
 
@@ -626,18 +769,18 @@ export default function AdminInventoryPage() {
                                     {stockInMsg.text}
                                 </p>
                             )}
-                            <div className="flex justify-end gap-2 pt-2">
+                            <div className="flex justify-end gap-2 pt-2 border-t">
                                 <button
                                     type="button"
                                     onClick={() => setStockInModal(false)}
-                                    className="rounded border px-4 py-2 text-gray-600"
+                                    className="rounded border px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={stockInLoading}
-                                    className="rounded bg-[#0f3a52] px-4 py-2 font-semibold text-white hover:bg-[#1a4f6e] disabled:opacity-50"
+                                    className="rounded bg-[#0f3a52] px-4 py-2 text-xs font-bold text-white hover:bg-[#1a4f6e] disabled:opacity-50 transition"
                                 >
                                     {stockInLoading ? 'Đang lưu...' : 'Xác nhận nhập kho'}
                                 </button>
@@ -660,16 +803,11 @@ export default function AdminInventoryPage() {
                         <form onSubmit={handleAdjust} className="space-y-3 text-sm">
                             <div>
                                 <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
-                                    Chọn nguyên liệu:
+                                    Nguyên liệu điều chỉnh:
                                 </label>
                                 <select
                                     value={adjustIngredientId}
-                                    onChange={(e) => {
-                                        const id = Number(e.target.value);
-                                        setAdjustIngredientId(id);
-                                        const found = ingredients?.find((i) => i.id === id);
-                                        if (found) setAdjustActualStock(found.stock);
-                                    }}
+                                    onChange={(e) => setAdjustIngredientId(Number(e.target.value))}
                                     className="w-full rounded border border-gray-300 p-2 outline-none"
                                 >
                                     {ingredients?.map((i) => (
@@ -711,18 +849,18 @@ export default function AdminInventoryPage() {
                                     {adjustMsg.text}
                                 </p>
                             )}
-                            <div className="flex justify-end gap-2 pt-2">
+                            <div className="flex justify-end gap-2 pt-2 border-t">
                                 <button
                                     type="button"
                                     onClick={() => setAdjustModal(false)}
-                                    className="rounded border px-4 py-2 text-gray-600"
+                                    className="rounded border px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={adjustLoading}
-                                    className="rounded bg-[#c4956a] px-4 py-2 font-semibold text-white hover:bg-[#a97b52] disabled:opacity-50"
+                                    className="rounded bg-[#c4956a] px-4 py-2 text-xs font-bold text-white hover:bg-[#a97b52] disabled:opacity-50 transition"
                                 >
                                     {adjustLoading ? 'Đang lưu...' : 'Lưu điều chỉnh'}
                                 </button>
@@ -741,9 +879,6 @@ export default function AdminInventoryPage() {
                                 <h3 className="text-lg font-bold text-[#0f3a52]">
                                     Chỉnh sửa công thức định lượng
                                 </h3>
-                                <p className="text-xs text-gray-500 mt-0.5">
-                                    Chọn món đồ uống hoặc topping cần điều chỉnh công thức
-                                </p>
                             </div>
                             <button
                                 onClick={() => {
@@ -856,10 +991,10 @@ export default function AdminInventoryPage() {
                                                 type="button"
                                                 disabled={editItems.length <= 1}
                                                 onClick={() => handleRemoveIngredientRow(idx)}
-                                                className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-20 transition"
+                                                className="rounded px-2 py-1 text-xs text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-20 transition"
                                                 title="Xóa nguyên liệu này khỏi công thức"
                                             >
-                                                🗑️
+                                                Xóa
                                             </button>
                                         </div>
                                     );
@@ -870,7 +1005,7 @@ export default function AdminInventoryPage() {
                                     onClick={handleAddIngredientRow}
                                     className="inline-flex items-center gap-1.5 rounded border border-dashed border-gray-300 px-3 py-1.5 text-xs font-bold text-[#0f3a52] hover:border-[#c4956a] hover:bg-orange-50/50 hover:text-[#c4956a] transition"
                                 >
-                                    + Thêm nguyên liệu vào công thức
+                                    Thêm dòng nguyên liệu
                                 </button>
                             </div>
 

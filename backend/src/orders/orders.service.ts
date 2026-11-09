@@ -111,13 +111,44 @@ export class OrdersService {
     });
   }
 
-  findMine(userId: number) {
-    return this.prisma.order.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
+    async findMine(userId: number, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where: { userId },
+        skip,
+        take: limit,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        include: {
+          items: { include: { product: { select: { name: true } } } },
+        },
+      }),
+      this.prisma.order.count({
+        where: { userId },
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  findMineById(userId: number, id: number) {
+    return this.prisma.order.findFirst({
+      where: { id, userId },
       include: {
         items: { include: { product: { select: { name: true } } } },
       },
+    }).then((order) => {
+      if (!order) {
+        throw new NotFoundException('Order not found');
+      }
+      return order;
     });
   }
 }

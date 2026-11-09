@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Body,
+  Query,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { OrdersService } from './orders.service';
@@ -15,7 +26,38 @@ export class OrdersController {
   }
 
   @Get('me')
-  mine(@CurrentUser() user: { userId: number }) {
-    return this.ordersService.findMine(user.userId);
+  async mine(
+    @CurrentUser() user: { userId: number },
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber < 1) {
+      throw new BadRequestException('Page must be a positive integer');
+    }
+
+    if (
+      !Number.isInteger(limitNumber) ||
+      limitNumber < 1 ||
+      limitNumber > 50
+    ) {
+      throw new BadRequestException('Limit must be between 1 and 50');
+    }
+
+    return this.ordersService.findMine(
+      user.userId,
+      pageNumber,
+      limitNumber,
+    );
+  }
+
+  @Get('me/:id')
+  findMineById(
+    @CurrentUser() user: { userId: number },
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.ordersService.findMineById(user.userId, id);
   }
 }

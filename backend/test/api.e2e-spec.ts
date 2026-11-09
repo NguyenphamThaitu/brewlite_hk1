@@ -259,19 +259,85 @@ describe('API Testing (integration)', () => {
       createdOrderIds.push(response.body.id);
     });
 
+    
     it('GET /orders/me - Xem don hang cua toi', async () => {
       const response = await request(app.getHttpServer())
         .get('/orders/me')
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.page).toBe(1);
+      expect(response.body.limit).toBe(10);
+      expect(response.body.total).toBeGreaterThan(0);
+      expect(response.body.totalPages).toBeGreaterThan(0);
+
       expect(
-        response.body.some((order: any) =>
+        response.body.data.some((order: any) =>
           createdOrderIds.includes(order.id),
         ),
       ).toBe(true);
     });
+
+    it('GET /orders/me - Phan trang don hang', async () => {
+      // Tao them 12 don hang
+      for (let i = 0; i < 12; i++) {
+        const response = await request(app.getHttpServer())
+          .post('/orders')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            items: [
+              {
+                productId,
+                size: 'S',
+                toppings: [],
+                qty: 1,
+              },
+            ],
+          })
+          .expect(201);
+
+        createdOrderIds.push(response.body.id);
+      }
+
+      const firstPage = await request(app.getHttpServer())
+        .get('/orders/me?page=1&limit=5')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const secondPage = await request(app.getHttpServer())
+        .get('/orders/me?page=2&limit=5')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(firstPage.body.data).toHaveLength(5);
+      expect(secondPage.body.data).toHaveLength(5);
+      expect(firstPage.body.page).toBe(1);
+      expect(secondPage.body.page).toBe(2);
+
+      const firstIds = firstPage.body.data.map((o: any) => o.id);
+      const secondIds = secondPage.body.data.map((o: any) => o.id);
+
+      expect(firstIds.some((id: number) => secondIds.includes(id))).toBe(false);
+      expect(new Set([...firstIds, ...secondIds]).size).toBe(10);
+      expect(firstPage.body.total).toBe(13);
+      expect(firstPage.body.totalPages).toBe(3);
+    });
+
+    it('GET /orders/me - Tu choi page khong hop le', async () => {
+      await request(app.getHttpServer())
+        .get('/orders/me?page=0')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400);
+    });
+
+    it('GET /orders/me - Tu choi limit vuot qua gioi han', async () => {
+      await request(app.getHttpServer())
+        .get('/orders/me?limit=51')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(400);
+    });
+
   });
 
   // =========================

@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +14,10 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import type { RequestUser } from '../auth/current-user.decorator';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './create-order.dto';
+import { ChangeOrderStatusDto } from './change-order-status.dto';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Role } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard)
 @Controller('orders')
@@ -42,5 +48,20 @@ export class OrdersController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.ordersService.cancel(id, user.userId, user.role);
+  }
+
+  @Patch(':id/status')
+  changeStatus(
+    @CurrentUser() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ChangeOrderStatusDto,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException(
+        'Bạn không có quyền thay đổi trạng thái đơn hàng',
+      );
+    }
+
+    return this.ordersService.changeStatus(id, dto.status);
   }
 }
